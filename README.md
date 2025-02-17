@@ -19,9 +19,11 @@ Audio Vault's key features:
 ## Architectural Decisions
 
 - The system will be developed using the [Go](https://go.dev/) programming language so that it can be cross compiled to Linux and Windows.
+- The system will be run from a primary server (node) and will use sync tools to keep a warm standby server (node) in a ready state.
 - The system will use an [SQLite](https://www.sqlite.org/) database to store its meta data.
+- The system will use [SQLite Rsync](https://www.sqlite.org/rsync.html) to backup the SQLite database to a warm standby server.
+- The system will use [rClone](https://rclone.org/local/) to sync audio to a warm standby server.
 - The system will offload audio processing to [SoX](https://linux.die.net/man/1/sox) Sound eXchange.
-
 
 ## Endpoints
 
