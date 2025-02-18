@@ -15,11 +15,12 @@ Audio Vault's key features:
 - Handles the safe storage of audio orphans.
 - Implements audio retention polices.
 
-
 ## Architectural Decisions
 
 - The system will be developed using the [Go](https://go.dev/) programming language so that it can be cross compiled to Linux and Windows.
 - The system will be run from a primary server (node) and will use sync tools to keep a warm standby server (node) in a ready state.
+- The web service should be run via a reverse proxy from a web server, e.g. IIS.
+- The web service can be installed on Windows as a service using the [NSSM](https://nssm.cc/) tool.
 - The system will use an [SQLite](https://www.sqlite.org/) database to store its meta data.
 - The system will use [SQLite Rsync](https://www.sqlite.org/rsync.html) to backup the SQLite database to a warm standby server.
 - The system will use [rClone](https://rclone.org/local/) to sync audio to a warm standby server.
