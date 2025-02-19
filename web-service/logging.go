@@ -30,7 +30,7 @@ func (app *App) accessLogFileClose() {
 func (app *App) applicationLogFileOpen() {
 	var err error
 	app.applicationLogFile, err = os.OpenFile(
-		app.executableFolder+"audit-vault.log",
+		app.executableFolder+"audio-vault.log",
 		os.O_RDWR|os.O_CREATE|os.O_APPEND,
 		0666)
 	if err != nil {
