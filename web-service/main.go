@@ -23,9 +23,7 @@ func main() {
 	// http.Handle("/static/", app.webServerHeaders(app.staticAccessLogs(http.StripPrefix("/static", fileServer))))
 	// log.Println("INFO:static hosting invoked")
 
-	fmt.Println("1")
 	app.configureRoutes()
-	fmt.Println("2")
 	app.startWebServer()
 	fmt.Println("HTTP web service loaded.")
 	fmt.Println("Press return to return to terminal.")
