@@ -38,3 +38,33 @@ The table outlines which endpoints use logging and which require an API key (con
 | /store          | Y      | Y       | Allows clients to submit audio segments for safe keeping                     |
 | /orphan         | Y      | Y       | Allows clients to submit audio not associated with a specific letter         |
 | /testing        | Y      | N       | A web user interface to allow tester to monitor the audio conversion process |
+
+
+## Running Web Service from IIS using a Reverse Proxy
+ 
+To configure IIS with Reverse Proxy Request Routing support, you'll need to install
+[application-request-routing](https://iis-umbraco.azurewebsites.net/downloads/microsoft/application-request-routing)
+ 
+Then set-up a basic `web.config` file with a single `rewrite` rule to forward all requests/traffic to the web service.
+Substitute the port number, if you've changed it from the default of `1969`.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <system.webServer>
+    <rewrite>
+        <rules>
+            <rule name="ReverseProxyAudioVault" enabled="true" stopProcessing="true">
+                <match url="(.*)" ignoreCase="true" />
+                <action type="Rewrite" url="http://localhost:1969/{R:1}" />
+            </rule>
+        </rules>
+    </rewrite>
+    <httpProtocol>
+        <customHeaders>
+            <remove name="X-Powered-By" />
+        </customHeaders>
+    </httpProtocol>
+    </system.webServer>
+</configuration>
+```
