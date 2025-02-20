@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"path"
@@ -12,21 +13,20 @@ import (
 func main() {
 	app := &App{}
 	app.initialise()
-	app.accessLogFileOpen()
 	app.applicationLogFileOpen()
 	app.loadHTMLTemplates()
 	go app.monitorOperatingSystemSignals()
 
 	// serve static files from the static sub-folder so that
 	// they can be given appropriate Cache-Control HTTP Headers
-	// fileServer := http.FileServer(http.Dir("./static/"))
-	// http.Handle("/static/", app.webServerHeaders(app.staticAccessLogs(http.StripPrefix("/static", fileServer))))
-	// log.Println("INFO:static hosting invoked")
+	fileServer := http.FileServer(http.Dir(app.executableFolder + "static-assets/"))
+	http.Handle("/static-assets/", app.webServerHeaders(app.webServerPassthrough(http.StripPrefix("/static-assets/", fileServer))))
 
 	app.configureRoutes()
-	app.startWebServer()
+
 	fmt.Println("HTTP web service loaded.")
 	fmt.Println("Press return to return to terminal.")
+	app.startWebServer()
 	select {} // block, so the program stays resident
 }
 
@@ -60,7 +60,6 @@ func (app *App) monitorOperatingSystemSignals() {
 	}
 
 	// flush log files and close them
-	app.accessLogFileClose()
 	app.applicationLogFileClose()
 	os.Exit(1)
 }

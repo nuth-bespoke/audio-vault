@@ -43,7 +43,7 @@ func (app *App) webServerHeaders(fn http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, "/static/") {
+		if strings.HasPrefix(r.URL.Path, "/static-assets/") {
 			// change the cache control settings for static assets
 			w.Header().Set("Cache-Control", "public, max-age=63072000, immutable")
 
@@ -55,6 +55,9 @@ func (app *App) webServerHeaders(fn http.HandlerFunc) http.HandlerFunc {
 			}
 			if strings.Contains(r.URL.Path, ".svg") {
 				w.Header().Set("Content-Type", "image/svg+xml")
+			}
+			if strings.Contains(r.URL.Path, ".png") {
+				w.Header().Set("Content-Type", "image/png")
 			}
 
 		} else {
@@ -84,5 +87,11 @@ func (app *App) startWebServer() {
 	if err := s.ListenAndServe(); err != nil {
 		log.Println("ERR:" + err.Error())
 		os.Exit(1)
+	}
+}
+
+func (app *App) webServerPassthrough(fn http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// fn.ServeHTTP(&interceptWriter, r)
 	}
 }
