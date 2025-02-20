@@ -36,6 +36,18 @@ func (app *App) initialise() {
 	app.executableFolder = path.Dir(os.Args[0]) + "/"
 	app.portNumber = ":1969"
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	switch hostname {
+	case "signalsix":
+		app.BaseURL = "http://localhost:1969/"
+	case "NUTH-VDS11":
+		app.BaseURL = "https://audio-vault-uat.xnuth.nhs.uk/"
+	}
+
 	app.signalChannel = make(chan os.Signal, 1)
 	signal.Notify(app.signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 }

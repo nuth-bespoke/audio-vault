@@ -10,6 +10,21 @@
         <hr />
         <p>&copy; 2025 - Newcastle Hospitals NHS Foundation Trust</p>
     </footer>
+
+    app.baseURL
+
+<script type="text/javascript">
+    const eventSrc = new EventSource("server-side-events/");
+    const cpu = document.getElementById("cpu");
+
+    eventSrc.addEventListener("cpu", (event) => {
+        cpu.textContent = event.data;
+    });
+
+    eventSrc.onerror = (err) => {
+        console.log("sse error", err);
+    };
+</script>
 </body>
 </html>
 {{end -}}

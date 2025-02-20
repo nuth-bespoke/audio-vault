@@ -55,6 +55,24 @@ aside {
     display: none;
 }
 
+header {
+    display: grid;
+    grid-template-columns: 20% 80%;
+}
+
+header > div {
+    display: table;
+    vertical-align: bottom;
+}
+
+header > div > p {
+    display: table-cell;
+    font-size: smaller;
+    text-align: right;
+    vertical-align: bottom;
+}
+
+
 footer p {
     color:#a4a4a4;
     display: block;

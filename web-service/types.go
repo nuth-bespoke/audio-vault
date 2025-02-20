@@ -7,6 +7,7 @@ import (
 
 type App struct {
 	applicationLogFile *os.File       // file handle to application logs
+	BaseURL            string         // the base URL of the application (different for different hosts)
 	executableFolder   string         // the folder the binary was executed from
 	portNumber         string         // the port number to run the web server on
 	signalChannel      chan os.Signal // channel to monitor operating system signals
