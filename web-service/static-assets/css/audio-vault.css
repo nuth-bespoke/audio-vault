@@ -1,0 +1,128 @@
+html {
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    box-sizing: border-box;
+    font-size: 100%;
+    overflow-y: scroll;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body {
+    background-color: #fff;
+    color:#222;
+    font-family: segoe ui, arial, sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.4;
+    margin: 2em auto 1em auto;
+    max-width: 80%;
+    padding: 0;
+    text-rendering: optimizeLegibility;
+    vertical-align: baseline;
+    word-wrap: break-word;
+}
+
+h1, h2, h3 {
+    color: #343a40;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 0;
+    margin-top: 1em;
+    text-align: left;
+    text-wrap: balance;
+}
+
+img {
+    display: block;
+    height: auto;
+    margin: 0;
+    max-width: 100%;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #DEE0E2;
+    display: block;
+    height: 1px;
+    margin: 1em 0;
+    padding: 0;
+}
+
+aside {
+    display: none;
+}
+
+footer p {
+    color:#a4a4a4;
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.test-tab {
+    background-color: #ffff00;
+    border-bottom: 2px solid #333;;
+    border-left: 2px solid #333;
+    border-right: 2px solid #333;;
+    cursor: default;
+    font-weight: bold;
+    left: 16px;
+    padding: 5px 20px;
+    position: fixed;
+    top: 300px;
+    transform-origin: 0;
+    transform: rotate(-90deg);
+    user-select: none;
+    z-index: 10000;
+}
+
+
+@media print {
+    main, header, footer, .test-tab {
+        display: none;
+    }
+    aside {
+        display: block;
+        font-size: 24px !important;
+        margin: 2em;
+    }
+}
+
+/* support a dark theme by default */
+@supports (color-scheme: dark light) {
+    @media screen and (prefers-color-scheme: dark) {
+        body {
+            background-color: #181818;
+            color: rgb(231, 233, 234);
+        }
+
+        h1, h2, h3 {
+            color: rgb(231, 233, 234);
+        }
+
+        img:not([src*=".svg"]) {
+            filter: invert();
+            opacity: 60%;
+        }
+
+        aside {
+            background-color: #242323;
+            border: 1px solid rgb(113, 118, 123);
+            color: rgb(231, 233, 234);
+        }
+
+        footer > p {
+            color: rgb(113, 118, 123);
+        }
+
+        .test-tab {
+            background-color:#333;
+            color:darkkhaki;
+        }
+    }
+}

@@ -10,6 +10,7 @@ import (
 
 func (app *App) configureRoutes() {
 	http.HandleFunc("/health-check/", app.webServerHeaders(app.routeHealthCheck))
+	http.HandleFunc("/testing/", app.webServerHeaders(app.routeTesting))
 }
 
 // The web server always emits these default HTTP response headers
@@ -17,7 +18,7 @@ func (app *App) configureRoutes() {
 // https://owasp.org/www-project-secure-headers/
 func (app *App) defaultResponseHeaders(w http.ResponseWriter) {
 	if w.Header().Get("Content-Type") == "text/html" {
-		w.Header().Set("Content-Security-Policy", "default-src 'self';")
+		// w.Header().Set("Content-Security-Policy", "default-src 'self';")
 	}
 
 	w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
@@ -43,7 +44,7 @@ func (app *App) webServerHeaders(fn http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, "/static-assets/") {
+		if strings.Contains(r.URL.Path, "static-assets") {
 			// change the cache control settings for static assets
 			w.Header().Set("Cache-Control", "public, max-age=63072000, immutable")
 
@@ -59,7 +60,6 @@ func (app *App) webServerHeaders(fn http.HandlerFunc) http.HandlerFunc {
 			if strings.Contains(r.URL.Path, ".png") {
 				w.Header().Set("Content-Type", "image/png")
 			}
-
 		} else {
 			w.Header().Set("Cache-Control", "private, max-age=0, no-cache")
 			w.Header().Set("Content-Type", "text/html")
@@ -92,6 +92,6 @@ func (app *App) startWebServer() {
 
 func (app *App) webServerPassthrough(fn http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// fn.ServeHTTP(&interceptWriter, r)
+		fn.ServeHTTP(w, r)
 	}
 }

@@ -12,3 +12,10 @@ type App struct {
 	signalChannel      chan os.Signal // channel to monitor operating system signals
 	tplHTML            *html.Template // pointer to all the HTML templates (views)
 }
+
+// requestState is the main data structure
+// used by every request to the web service
+type requestState struct {
+	Application  App
+	WebPageTitle string
+}

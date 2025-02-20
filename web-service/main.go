@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	html "html/template"
 	"log"
 	"net/http"
 	"os"
@@ -40,7 +41,7 @@ func (app *App) initialise() {
 }
 
 func (app *App) loadHTMLTemplates() {
-	// app.tplHTML = html.Must(html.ParseGlob(path.Dir(os.Args[0]) + "views/*.html"))
+	app.tplHTML = html.Must(html.ParseGlob(path.Dir(os.Args[0]) + "/views/*.html"))
 	log.Println("INFO:HTML Templates Loaded")
 }
 
