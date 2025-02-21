@@ -34,15 +34,15 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 		case <-clientGone:
 
 		case <-cpuT.C:
-
 			c, err := cpu.Percent(0, true)
 			if err != nil {
 				log.Printf("unable to get cpu: %s", err.Error())
 				return
 			}
 
-			if _, err := fmt.Fprintf(w, "event:cpu\ndata: %.2f\n\n", c[0]); err != nil {
-				log.Printf("unable to write: %s", err.Error())
+			_, err = fmt.Fprintf(w, "event:cpu\ndata: %.2f\n\n", c[0])
+			if err != nil {
+				log.Println(err.Error())
 				return
 			}
 
