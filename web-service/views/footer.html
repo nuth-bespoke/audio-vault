@@ -15,12 +15,18 @@
 <script type="text/javascript">
     const eventSrc = new EventSource("server-side-events/");
     const cpu = document.getElementById("cpu");
+    const segments = document.getElementById("segments");
 
     eventSrc.addEventListener("cpu", (event) => {
         cpu.textContent = event.data;
     });
 
+    eventSrc.addEventListener("segments", (event) => {
+        segments.innerHTML = event.data;
+    });
+
     eventSrc.onerror = (err) => {
+        
         console.log("sse error", err);
     };
 </script>

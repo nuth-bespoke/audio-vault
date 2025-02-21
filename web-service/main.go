@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
+
+	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -18,6 +20,9 @@ func main() {
 	app.loadHTMLTemplates()
 	go app.monitorOperatingSystemSignals()
 
+	app.DBAudioVaultOpen()
+	app.DBAudioVaultGetSegments()
+
 	// serve static files from the static sub-folder so that
 	// they can be given appropriate Cache-Control HTTP Headers
 	fileServer := http.FileServer(http.Dir(app.executableFolder + "static-assets/"))
@@ -26,7 +31,7 @@ func main() {
 	app.configureRoutes()
 
 	fmt.Println("HTTP web service loaded.")
-	fmt.Println("Press return to return to terminal.")
+	fmt.Println("Press CTRL+C to exit & return to the terminal.")
 	app.startWebServer()
 	select {} // block, so the program stays resident
 }
@@ -77,5 +82,6 @@ func (app *App) monitorOperatingSystemSignals() {
 
 	// flush log files and close them
 	app.applicationLogFileClose()
+	app.DBAudioVaultClose()
 	os.Exit(1)
 }

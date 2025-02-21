@@ -23,7 +23,10 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	cpuT := time.NewTicker(time.Second * 2)
+	pendingSegments := time.NewTicker(time.Second * 2)
+	defer pendingSegments.Stop()
+
+	cpuT := time.NewTicker(time.Second * 1)
 	defer cpuT.Stop()
 
 	clientGone := r.Context().Done()
@@ -32,6 +35,14 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-clientGone:
+
+		case <-pendingSegments.C:
+			segments := app.DBAudioVaultGetSegments()
+			_, err := w.Write([]byte("event:segments\ndata: " + segments + "\n\n"))
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
 
 		case <-cpuT.C:
 			c, err := cpu.Percent(0, true)

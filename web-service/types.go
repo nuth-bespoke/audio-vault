@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	html "html/template"
 	"os"
 )
@@ -11,6 +12,8 @@ type App struct {
 	portNumber         string         // the port number to run the web server on
 	signalChannel      chan os.Signal // channel to monitor operating system signals
 	tplHTML            *html.Template // pointer to all the HTML templates (views)
+	// db                 sqliteDriver
+	sqlite *sql.DB
 
 	// Public variables which need to be accessed from the HTML templates/views
 	BaseURL string // the base URL of the application (different for different hosts)
