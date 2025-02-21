@@ -13,7 +13,11 @@
 </head>
 
 <body >
-    <div class="test-tab">Testing System</div>
+
+    <!-- only display the testing banner if run from a testing server -->
+    {{if .Application.Testing -}}
+        <div class="test-tab">Testing System</div>
+    {{end -}}
 
     <header>
         <div>

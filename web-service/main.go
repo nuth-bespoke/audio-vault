@@ -35,6 +35,7 @@ func main() {
 func (app *App) initialise() {
 	app.executableFolder = path.Dir(os.Args[0]) + "/"
 	app.portNumber = ":1969"
+	app.Testing = false
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -44,8 +45,10 @@ func (app *App) initialise() {
 	switch hostname {
 	case "signalsix":
 		app.BaseURL = "http://localhost:1969/"
+		app.Testing = true
 	case "NUTH-VDS11":
 		app.BaseURL = "https://audio-vault-uat.xnuth.nhs.uk/"
+		app.Testing = true
 	}
 
 	app.signalChannel = make(chan os.Signal, 1)

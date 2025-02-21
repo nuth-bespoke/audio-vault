@@ -23,17 +23,15 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	cpuT := time.NewTicker(time.Second)
+	cpuT := time.NewTicker(time.Second * 2)
 	defer cpuT.Stop()
 
 	clientGone := r.Context().Done()
-
 	rc := http.NewResponseController(w)
 
 	for {
 		select {
 		case <-clientGone:
-			log.Println("SSE client has disconnected")
 
 		case <-cpuT.C:
 
