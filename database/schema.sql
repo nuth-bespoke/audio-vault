@@ -29,21 +29,25 @@ CREATE TABLE Segments (
     AudioDuration       TEXT NOT NULL DEFAULT '?',
     AudioPrecision      TEXT NOT NULL DEFAULT '?',
     AudioSampleRate     TEXT NOT NULL DEFAULT '?',
-    ProcessingProgress  INTEGER NOT NULL DEFAULT 0,
-
+    ProcessingProgress  INTEGER NOT NULL DEFAULT 0, -- 0 = Not Processed
+                                                    -- 1 = Meta Data Retrieved
+                                                    -- 2 = Normalised Version Created
+                                                    -- 3 = Segments Combined
     FOREIGN KEY(DocumentID) REFERENCES Dictations(DocumentID)
 );
 
-CREATE INDEX idx_segments_pending ON Segments (ProcessingProgress, DocumentID, SegmentFileOrder);
+CREATE INDEX idx_segments_pending ON Segments 
+    (ProcessingProgress, DocumentID, SegmentFileOrder)
+    WHERE ProcessingProgress <= 2;
 
-INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt)
-    VALUES (999, '7777h', 'MOSSXP', 'P4X045', DATE('now'));
+-- INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt)
+--     VALUES (999, '7777h', 'MOSSXP', 'P4X045', DATE('now'));
 
-INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
-    VALUES ('999-7777h-12345-1.wav', 999, 567890, 1);
+-- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+--     VALUES ('999-7777h-12345-1.wav', 999, 567890, 1);
 
-INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
-    VALUES ('999-7777h-67890-2.wav', 999, 55567890, 2);
+-- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+--     VALUES ('999-7777h-67890-2.wav', 999, 55567890, 2);
 
 --EXPLAIN QUERY PLAN
 SELECT 
