@@ -7,6 +7,6 @@ db:
 
 test:
 	cd web-service
-	go build -ldflags="-w -s" -o audio-vault *.go
+	go build -ldflags="-w -s -X main.GIT_COMMIT_HASH=`git rev-parse HEAD`" -o audio-vault *.go
 	cd ..
 	./web-service/audio-vault

@@ -16,8 +16,10 @@ type App struct {
 	sqliteWriter       *sql.DB
 
 	// Public variables which need to be accessed from the HTML templates/views
-	BaseURL string // the base URL of the application (different for different hosts)
-	Testing bool   // true if software is running on a host server that is a testing server
+	BaseURL            string // the base URL of the application (different for different hosts)
+	GitCommitHash      string // holds the latest Git Commit has from git rev-parse HEAD
+	GitCommitHashShort string // holds the first 8 characters of the full Git Commit
+	Testing            bool   // true if software is running on a host server that is a testing server
 }
 
 // requestState is the main data structure

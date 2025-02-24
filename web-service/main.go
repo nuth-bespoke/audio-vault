@@ -9,12 +9,18 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
 
+var GIT_COMMIT_HASH string
+
 func main() {
-	app := &App{}
+	app := &App{
+		GitCommitHash: GIT_COMMIT_HASH,
+	}
+
 	app.initialise()
 	app.applicationLogFileOpen()
 	app.loadHTMLTemplates()
@@ -51,11 +57,18 @@ func (app *App) initialise() {
 	case "signalsix":
 		app.BaseURL = "http://localhost:1969/"
 		app.Testing = true
+
+		// on the developers machine create a GitCommitHash
+		// based on the current date/time to cache burst any
+		// changes made to templates, CSS & JS files
+		now := time.Now()
+		app.GitCommitHash = now.Format("2006-01-02-15-04-05")
 	case "NUTH-VDS11":
 		app.BaseURL = "https://audio-vault-uat.xnuth.nhs.uk/"
 		app.Testing = true
 	}
 
+	app.GitCommitHashShort = app.GitCommitHash[0:8]
 	app.signalChannel = make(chan os.Signal, 1)
 	signal.Notify(app.signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 }

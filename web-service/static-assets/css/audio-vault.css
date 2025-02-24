@@ -72,14 +72,13 @@ header > div > p {
     vertical-align: bottom;
 }
 
-
 footer p {
     color:#a4a4a4;
     display: block;
     font-size: 13px;
     font-weight: 400;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.075em;
 }
 
 .test-tab {
@@ -99,6 +98,12 @@ footer p {
     z-index: 10000;
 }
 
+
+@media not (prefers-reduced-motion: reduce) {
+    #cpu {
+        view-transition-name: hero;
+    }
+}
 
 @media print {
     main, header, footer, .test-tab {

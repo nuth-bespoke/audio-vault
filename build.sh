@@ -1,7 +1,7 @@
 #! /usr/bin/bash
 rm -r release/*
 cd web-service
-GOOS=windows GOARCH=amd64 go build -ldflags="-w -s" -o audio-vault.exe *.go
+GOOS=windows GOARCH=amd64 go build -ldflags="-w -s -X main.GIT_COMMIT_HASH=`git rev-parse HEAD`" -o audio-vault.exe *.go
 mv audio-vault.exe ../release/audio-vault.exe
 cp audio-vault.db ../release/audio-vault.db
 cd ..
