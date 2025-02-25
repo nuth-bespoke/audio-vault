@@ -9,6 +9,7 @@
 *.dylib
 
 web-service/vault/*
+audio-samples/*
 audio-vault
 release/*
 *.log

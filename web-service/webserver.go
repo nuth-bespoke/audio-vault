@@ -12,6 +12,8 @@ func (app *App) configureRoutes() {
 	http.HandleFunc("/health-check/", app.webServerHeaders(app.routeHealthCheck))
 	http.HandleFunc("/testing/", app.webServerHeaders(app.routeTesting))
 	http.HandleFunc("/server-side-events/", app.webServerHeaders(app.routeServerSideEvents))
+
+	http.HandleFunc("/store/", app.routeStore)
 }
 
 // The web server always emits these default HTTP response headers

@@ -3,8 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -64,6 +67,65 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 			rc.Flush()
 		}
 	}
+}
+
+func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var file multipart.File
+	var header *multipart.FileHeader
+
+	if r.Header.Get("authorization") != "cf83e1357eefb8bdf1542850d66d800" {
+		log.Println("ERR: 401 Unauthorized, from " + r.RemoteAddr)
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("401 Unauthorized"))
+		return
+	}
+
+	if strings.ToUpper(r.Method) != "POST" {
+		log.Println("ERR: 405 Method Not Allowed, from " + r.RemoteAddr)
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte("405 Method Not Allowed"))
+		return
+	}
+
+	err = r.ParseMultipartForm(1024 * 4)
+	if err != nil {
+		log.Println("ERR: 500 error parsing form data " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+
+	file, header, err = r.FormFile("fileupload")
+	if err != nil {
+		log.Println("ERR: 500 error parsing form data " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+	defer file.Close()
+
+	// create the file on disk in the vault folders
+	dst, err := os.Create(app.executableFolder + "vault/segments/" + header.Filename)
+	if err != nil {
+		log.Println("ERR: 500 error creating file entry " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+	defer dst.Close()
+
+	// copy the file to the new file location
+	if _, err := io.Copy(dst, file); err != nil {
+		log.Println("ERR: 500 error writing data to file " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+
+	// w.Header().Set("K", "V")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("200 - " + header.Filename + " received"))
 }
 
 func (app *App) routeTesting(w http.ResponseWriter, r *http.Request) {
