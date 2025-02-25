@@ -1,0 +1,41 @@
+{{define "segments-listing" -}}
+
+<p>&nbsp;</p>
+
+<table class="table table-sm table-striped table-hover">
+    <tr>
+        <th width="90">DocID</th>
+        <th width="110">User</th>
+        <th width="80">PC</th>
+        <th width="280">Segment</th>
+        <th width="80">Size</th>
+        <th>WAV Meta Data</th>
+        <th width="80">Open</th>
+    </tr>
+
+    {{range .Segments -}}
+    <tr>
+        <td>{{.DocumentID}}</td>
+        <td>{{.CreatedBy}}</td>
+        <td>{{.MachineName}}</td>
+        <td>{{.SegmentFileName}}</td>
+        <td>{{.SegmentFileSize}}</td>
+        <td>
+            <smaller>
+                BitRate: {{.AudioBitRate}}<br>
+                Duration: {{.AudioDuration}}
+            </smaller>
+        </td>
+        <td></td>
+    </tr>
+
+    <!--
+    &audioSegment.AudioBitRate,
+    &audioSegment.AudioDuration,
+    &audioSegment.AudioPrecision,
+    &audioSegment.AudioSampleRate
+    -->
+    {{end -}}
+</table>
+
+{{end -}}

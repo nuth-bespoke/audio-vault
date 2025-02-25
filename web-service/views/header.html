@@ -2,14 +2,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <base href="{{.Application.BaseURL}}" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta name="robots" content="noindex,nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ .WebPageTitle }} &mdash; Audit Vault</title>
     <link href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABmJLR0T///////8JWPfcAAAACXBIWXMAAABIAAAASABGyWs+AAAAF0lEQVRIx2NgGAWjYBSMglEwCkbBSAcACBAAAeaR9cIAAAAASUVORK5CYII=" rel="icon" type="image/x-icon" />
+    <link rel="stylesheet" href="../static-assets/css/bootstrap.5.3.3.min.css">
     <link rel="stylesheet" href="../static-assets/css/audio-vault.css?{{.Application.GitCommitHash}}">
-    <base href="{{.Application.BaseURL}}" />
 </head>
 
 <body >
@@ -19,11 +20,14 @@
         <div class="test-tab">Testing System</div>
     {{end -}}
 
+    <div class="container-md">
+
     <header>
         <div>
             <img src="static-assets/img/logo.png" width="96" height="96" alt="Audio Vault">
         </div>
         <div>
+            <h2>Audio Vault</h2>
             <p>Server usage : <span id="cpu">??.??</span>%</p>
         </div>
     </header>

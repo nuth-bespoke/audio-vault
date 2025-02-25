@@ -13,21 +13,31 @@
     </footer>
 
 
+    </div>
+
+
 <script type="text/javascript">
     const eventSrc = new EventSource("server-side-events/");
     const cpu = document.getElementById("cpu");
     const segments = document.getElementById("segments");
+    const paused_chkbox = document.getElementById('paused');
 
     eventSrc.addEventListener("cpu", (event) => {
         cpu.textContent = event.data;
     });
 
     eventSrc.addEventListener("segments", (event) => {
-        segments.innerHTML = event.data;
+        if (paused_chkbox === null) {
+            console.log("paused_chkbox element does not exist");
+        } else if (paused_chkbox.checked) {
+            console.log("not updating segments table as paused")
+        } else {
+            segments.innerHTML = event.data;
+            console.log("updated segments table")
+        }
     });
 
     eventSrc.onerror = (err) => {
-        
         console.log("sse error", err);
     };
 </script>

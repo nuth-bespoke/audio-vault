@@ -28,3 +28,19 @@ type requestState struct {
 	Application  App
 	WebPageTitle string
 }
+
+type segments struct {
+	Segments []segment
+}
+
+type segment struct {
+	DocumentID      string
+	CreatedBy       string
+	MachineName     string
+	SegmentFileName string
+	SegmentFileSize string
+	AudioBitRate    string
+	AudioDuration   string
+	AudioPrecision  string
+	AudioSampleRate string
+}

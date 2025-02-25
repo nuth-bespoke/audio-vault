@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"log"
 	"os"
@@ -16,27 +17,54 @@ func (app *App) DBAudioVaultClose() {
 func (app *App) DBAudioVaultGetSegments() string {
 	var err error
 	var rows *sql.Rows
-	var html string
+	var tplBuffer bytes.Buffer
 
-	// TODO: Convert inline html to template parse
-	// TODO: Return all fields
+	segments := segments{}
 
-	rows, err = app.sqliteReader.Query("SELECT DocumentID FROM Segments;")
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			Segments.DocumentID,
+			Dictations.CreatedBy,
+			Dictations.MachineName,
+			Segments.SegmentFileName,
+			Segments.SegmentFileSize,
+			Segments.AudioBitRate,
+			Segments.AudioDuration,
+			Segments.AudioPrecision,
+			Segments.AudioSampleRate
+		FROM Segments
+		LEFT JOIN Dictations ON Segments.DocumentID = Dictations.DocumentID
+		WHERE ProcessingProgress <= 2
+		ORDER BY Segments.DocumentID, SegmentFileOrder;`)
 	if err != nil {
-		log.Println(err.Error())
+		log.Println("ERR:" + err.Error())
 	}
 
-	html = html + `<ul>`
 	for rows.Next() {
-		var i string
-		if err = rows.Scan(&i); err != nil {
-			log.Println(err.Error())
-		}
-		html = html + `<li>` + i + `</li>`
-	}
-	html = html + `</ul>`
+		var audioSegment segment
 
-	return html
+		if err = rows.Scan(
+			&audioSegment.DocumentID,
+			&audioSegment.CreatedBy,
+			&audioSegment.MachineName,
+			&audioSegment.SegmentFileName,
+			&audioSegment.SegmentFileSize,
+			&audioSegment.AudioBitRate,
+			&audioSegment.AudioDuration,
+			&audioSegment.AudioPrecision,
+			&audioSegment.AudioSampleRate); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		segments.Segments = append(segments.Segments, audioSegment)
+	}
+
+	err = app.tplHTML.ExecuteTemplate(&tplBuffer, "segments-listing", segments)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	return tplBuffer.String()
 }
 
 func (app *App) DBAudioVaultOpen() {

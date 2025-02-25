@@ -14,10 +14,10 @@ body {
     background-color: #fff;
     color:#222;
     font-family: segoe ui, arial, sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 400;
     line-height: 1.4;
-    margin: 2em auto 1em auto;
+    margin: 2em auto 1em auto !important;
     max-width: 80%;
     padding: 0;
     text-rendering: optimizeLegibility;
@@ -65,6 +65,12 @@ header > div {
     vertical-align: bottom;
 }
 
+header > div > h2 {
+    display: table-footer-group;
+    text-align: right;
+    vertical-align: top;
+}
+
 header > div > p {
     display: table-cell;
     font-size: smaller;
@@ -97,7 +103,6 @@ footer p {
     user-select: none;
     z-index: 10000;
 }
-
 
 @media not (prefers-reduced-motion: reduce) {
     #cpu {

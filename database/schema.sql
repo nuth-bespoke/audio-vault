@@ -40,14 +40,14 @@ CREATE INDEX idx_segments_pending ON Segments
     (ProcessingProgress, DocumentID, SegmentFileOrder)
     WHERE ProcessingProgress <= 2;
 
--- INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt)
---     VALUES (999, '7777h', 'MOSSXP', 'P4X045', DATE('now'));
+INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt)
+    VALUES (98767978, '0999994H', 'BRADLEYP6', 'P4X045', DATE('now'));
 
--- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
---     VALUES ('999-7777h-12345-1.wav', 999, 567890, 1);
+INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+    VALUES ('98767978-0999994H-12345-1.wav', 98767978, 567890, 1);
 
--- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
---     VALUES ('999-7777h-67890-2.wav', 999, 55567890, 2);
+INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+    VALUES ('98767978-0999994H-67890-2.wav', 98767978, 55567890, 2);
 
 --EXPLAIN QUERY PLAN
 SELECT 

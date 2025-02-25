@@ -38,6 +38,10 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 
 		case <-pendingSegments.C:
 			segments := app.DBAudioVaultGetSegments()
+
+			//remove new lines from segments HTML so that
+			//it can be sent over Server Side Events
+			segments = strings.Replace(segments, "\n", "", -1)
 			_, err := w.Write([]byte("event:segments\ndata: " + segments + "\n\n"))
 			if err != nil {
 				log.Println(err.Error())
