@@ -23,6 +23,7 @@ func main() {
 
 	app.initialise()
 	app.applicationLogFileOpen()
+	app.createFolderStructure()
 	app.loadHTMLTemplates()
 	go app.monitorOperatingSystemSignals()
 
@@ -40,6 +41,22 @@ func main() {
 	fmt.Println("Press CTRL+C to exit & return to the terminal.")
 	app.startWebServer()
 	select {} // block, so the program stays resident
+}
+
+func (app *App) createFolderTree(path string) {
+	tree := app.executableFolder + path
+	err := os.MkdirAll(tree, os.ModePerm)
+	if err != nil {
+		log.Println("FATAL:" + err.Error())
+		fmt.Println("FATAL:" + err.Error())
+		os.Exit(1)
+	}
+}
+
+func (app *App) createFolderStructure() {
+	app.createFolderTree("vault/dictations/")
+	app.createFolderTree("vault/orphans/")
+	app.createFolderTree("vault/segments/")
 }
 
 // set the default values for the application
