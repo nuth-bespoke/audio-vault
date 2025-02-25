@@ -6,8 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path"
+	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -35,8 +38,9 @@ func main() {
 	fileServer := http.FileServer(http.Dir(app.executableFolder + "static-assets/"))
 	http.Handle("/static-assets/", app.webServerHeaders(app.webServerPassthrough(http.StripPrefix("/static-assets/", fileServer))))
 
-	app.configureRoutes()
+	go app.SoxGetMetadata()
 
+	app.configureRoutes()
 	fmt.Println("HTTP web service loaded.")
 	fmt.Println("Press CTRL+C to exit & return to the terminal.")
 	app.startWebServer()
@@ -114,4 +118,47 @@ func (app *App) monitorOperatingSystemSignals() {
 	app.applicationLogFileClose()
 	app.DBAudioVaultClose()
 	os.Exit(1)
+}
+
+func (app *App) SoxParseMetadata(prefix string, data []string) string {
+	for _, row := range data {
+		if strings.HasPrefix(row, prefix) {
+			values := strings.Split(row, ":")
+			return strings.TrimSpace(values[1])
+		}
+	}
+	return ""
+}
+
+func (app *App) SoxGetMetadata() {
+	var soxExecutable string
+	var timerEnabled bool
+
+	if runtime.GOOS == "windows" {
+		soxExecutable = app.executableFolder + "tools/sox.exe"
+	} else {
+		soxExecutable = "/usr/bin/sox"
+	}
+
+	timerEnabled = true
+	for {
+		if timerEnabled {
+			timerEnabled = false
+
+			cmd := exec.Command(soxExecutable, "--info", app.executableFolder+"vault/segments/98767978-0999994H-12345-1.wav")
+			out, err := cmd.Output()
+			if err != nil {
+				log.Fatal("could not run command: ", err)
+			}
+
+			output := string(out)
+			lines := strings.Split(output, "\n")
+
+			fmt.Println(app.SoxParseMetadata("Precision", lines))
+			fmt.Println(app.SoxParseMetadata("Bit Rate", lines))
+
+			time.Sleep(5 * time.Second)
+			timerEnabled = true
+		}
+	}
 }
