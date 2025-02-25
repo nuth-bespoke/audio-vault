@@ -31,13 +31,14 @@ Audio Vault's key features:
 A list of endpoints that the service will expose.
 The table outlines which endpoints use logging and which require an API key (configured in the `settings.ini` file)
 
-| endpoint        | logged | API Key | description                                                                  |
-| --------------- |------- |---------|----------------------------------------------------------------------------- |
-| /health-check   | N      | N       | Used by clients and automated checks to see if the service is running        |
-| /record         | Y      | Y       | Allows clients to submit meta data about incoming audio segments             |
-| /store          | Y      | Y       | Allows clients to submit audio segments for safe keeping                     |
-| /orphan         | Y      | Y       | Allows clients to submit audio not associated with a specific letter         |
-| /testing        | Y      | N       | A web user interface to allow tester to monitor the audio conversion process |
+| endpoint            | API Key | description                                                                  |
+| ------------------- |---------|----------------------------------------------------------------------------- |
+| /health-check       | N       | Used by clients and automated checks to see if the service is running        |
+| /orphan             | Y       | Allows clients to submit audio not associated with a specific letter         |
+| /record             | Y       | Allows clients to submit meta data about incoming audio segments             |
+| /server-side-events | N       | Sever push of CPU usage and list of pending segments that are being processed|
+| /store              | Y       | Allows clients to submit audio segments for safe keeping                     |
+| /testing            | N       | A web user interface to allow tester to monitor the audio conversion process |
 
 
 ## Running Web Service from IIS using a Reverse Proxy
