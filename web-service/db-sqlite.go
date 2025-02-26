@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strconv"
 
+	"github.com/dustin/go-humanize"
 	_ "modernc.org/sqlite"
 )
 
@@ -57,6 +59,9 @@ func (app *App) DBAudioVaultGetSegments() string {
 			&audioSegment.ProcessingProgress); err != nil {
 			log.Println("ERR:" + err.Error())
 		}
+
+		fileSize, _ := strconv.ParseUint(audioSegment.SegmentFileSize, 0, 64)
+		audioSegment.SegmentFileSize = humanize.Bytes(fileSize)
 
 		segments.Segments = append(segments.Segments, audioSegment)
 	}

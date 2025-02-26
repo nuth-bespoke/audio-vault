@@ -3,12 +3,12 @@ module audio-vault
 go 1.23.0
 
 require (
+	github.com/dustin/go-humanize v1.0.1
 	github.com/shirou/gopsutil/v4 v4.25.1
 	modernc.org/sqlite v1.35.0
 )
 
 require (
-	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.8.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/google/uuid v1.6.0 // indirect
