@@ -41,6 +41,7 @@ func main() {
 	http.Handle("/static-assets/", app.webServerHeaders(app.webServerPassthrough(http.StripPrefix("/static-assets/", fileServer))))
 
 	go app.SoxGetMetadata()
+	go app.SoxNormaliseSegments()
 
 	app.configureRoutes()
 	fmt.Println("HTTP web service loaded.")
@@ -158,7 +159,7 @@ func (app *App) SoxGetMetadata() {
 		if timerEnabled {
 			timerEnabled = false
 
-			segments := strings.Split(app.DBAudioVaultGetSegmentsPendingMetaData(), `^`)
+			segments := strings.Split(app.DBAudioVaultGetSegmentsByProgressID(0), `^`)
 			for _, filename := range segments {
 				if len(filename) == 0 {
 					break
@@ -186,6 +187,55 @@ func (app *App) SoxGetMetadata() {
 						app.SoxParseMetadata("Precision", lines),
 						app.SoxParseMetadata("Sample Rate", lines),
 						filename)
+				}
+			}
+
+			time.Sleep(5 * time.Second)
+			timerEnabled = true
+		}
+	}
+}
+
+func (app *App) SoxNormaliseSegments() {
+	var timerEnabled bool
+
+	timerEnabled = true
+	for {
+		if timerEnabled {
+			timerEnabled = false
+
+			segments := strings.Split(app.DBAudioVaultGetSegmentsByProgressID(1), `^`)
+			for _, filename := range segments {
+				if len(filename) == 0 {
+					break
+				}
+
+				filenamePath := app.executableFolder + "vault/segments/" + filename
+				if app.checkFileExists(filenamePath) {
+					log.Println("INFO: getting sox --norm for " + filenamePath)
+
+					//sox --norm 91817201-202406100959-1.wav -r 48000 -c 1 1.wav
+					cmd := exec.Command(app.soxExecutable, "--norm", filenamePath, "-r 48000", "-c 1", filenamePath+".normal.wav")
+					out, err := cmd.Output()
+					if err != nil {
+						if exitError, ok := err.(*exec.ExitError); ok {
+							log.Println("ERR: sox --norm return code " + strconv.Itoa(exitError.ExitCode()))
+							break
+						}
+						log.Println("ERR: could not run command, ", err.Error())
+						break
+					}
+
+					fmt.Println(out)
+					break
+
+					// lines := strings.Split(string(out), "\n")
+					// app.DBAudioVaultUpdateSegmentMetadata(
+					// 	app.SoxParseMetadata("Bit Rate", lines),
+					// 	app.SoxParseMetadata("Duration", lines),
+					// 	app.SoxParseMetadata("Precision", lines),
+					// 	app.SoxParseMetadata("Sample Rate", lines),
+					// 	filename)
 				}
 			}
 

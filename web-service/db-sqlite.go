@@ -76,7 +76,7 @@ func (app *App) DBAudioVaultGetSegments() string {
 	return tplBuffer.String()
 }
 
-func (app *App) DBAudioVaultGetSegmentsPendingMetaData() string {
+func (app *App) DBAudioVaultGetSegmentsByProgressID(progressID int) string {
 	var err error
 	var rows *sql.Rows
 
@@ -84,9 +84,9 @@ func (app *App) DBAudioVaultGetSegmentsPendingMetaData() string {
 		SELECT
 			SegmentFileName
 		 FROM Segments
-		WHERE ProcessingProgress = 0
+		WHERE ProcessingProgress = ?
 		ORDER BY DocumentID
-		LIMIT 0, 10;`)
+		LIMIT 0, 10;`, progressID)
 	if err != nil {
 		log.Println("ERR:" + err.Error())
 	}
