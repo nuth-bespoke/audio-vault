@@ -37,6 +37,27 @@
         }
     });
 
+    /* 
+        toggle on/off all audio controls based on the status
+        of the paused checked box. Can only play audio if the
+        refresh is paused as a refresh will update the DOM
+    */
+    if (paused_chkbox !== null) {
+        paused_chkbox.addEventListener("change", function() {
+            if (paused_chkbox.checked) {
+                var audioElements = document.getElementsByTagName("audio");
+                for (var i = 0; i < audioElements.length; i++) {
+                    audioElements[i].setAttribute("controls", "controls");
+                }
+            } else {
+                var audioElements = document.getElementsByTagName("audio");
+                for (var i = 0; i < audioElements.length; i++) {
+                    audioElements[i].removeAttribute("controls");
+                }
+            }
+        });
+    }
+
     eventSrc.onerror = (err) => {
         console.log("sse error", err);
     };

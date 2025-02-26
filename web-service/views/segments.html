@@ -29,7 +29,9 @@
                 Duration: {{.AudioDuration}}<br>
             </smaller>
         </td>
-        <td></td>
+        <td>
+            <audio preload="none" controlslist="nofullscreen nodownload noremoteplayback noplaybackrate" src="/stream/{{.SegmentFileName}}"></audio>
+        </td>
     </tr>
 
     {{end -}}

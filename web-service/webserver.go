@@ -14,6 +14,7 @@ func (app *App) configureRoutes() {
 	http.HandleFunc("/server-side-events/", app.webServerHeaders(app.routeServerSideEvents))
 
 	http.HandleFunc("/store/", app.routeStore)
+	http.HandleFunc("/stream/", app.routeStream)
 }
 
 // The web server always emits these default HTTP response headers

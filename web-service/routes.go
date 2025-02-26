@@ -20,6 +20,39 @@ func (app *App) routeHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("AudioVault: OK :-)"))
 }
 
+func (app *App) routeStream(w http.ResponseWriter, r *http.Request) {
+	var audioFilename string
+	var err error
+	var file *os.File
+
+	audioFilename = strings.Replace(r.URL.Path, "/stream/", "", -1)
+
+	switch r.Method {
+	case http.MethodGet:
+
+		file, err = os.Open(app.executableFolder + "vault/segments/" + audioFilename)
+		if err != nil {
+			log.Println("ERR: opening /stream/" + audioFilename)
+		}
+
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				log.Println("ERR: closing /stream/" + audioFilename)
+			}
+		}()
+
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-Type", "audio/wav")
+
+		_, err = io.Copy(w, file)
+		if err != nil {
+			log.Println("ERR: writing /stream/" + audioFilename)
+		}
+	}
+}
+
 func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
