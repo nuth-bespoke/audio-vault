@@ -31,7 +31,8 @@ func (app *App) DBAudioVaultGetSegments() string {
 			Segments.AudioBitRate,
 			Segments.AudioDuration,
 			Segments.AudioPrecision,
-			Segments.AudioSampleRate
+			Segments.AudioSampleRate,
+			Segments.ProcessingProgress
 		FROM Segments
 		LEFT JOIN Dictations ON Segments.DocumentID = Dictations.DocumentID
 		WHERE ProcessingProgress <= 2
@@ -52,7 +53,8 @@ func (app *App) DBAudioVaultGetSegments() string {
 			&audioSegment.AudioBitRate,
 			&audioSegment.AudioDuration,
 			&audioSegment.AudioPrecision,
-			&audioSegment.AudioSampleRate); err != nil {
+			&audioSegment.AudioSampleRate,
+			&audioSegment.ProcessingProgress); err != nil {
 			log.Println("ERR:" + err.Error())
 		}
 

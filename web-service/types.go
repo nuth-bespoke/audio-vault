@@ -34,13 +34,14 @@ type segments struct {
 }
 
 type segment struct {
-	DocumentID      string
-	CreatedBy       string
-	MachineName     string
-	SegmentFileName string
-	SegmentFileSize string
-	AudioBitRate    string
-	AudioDuration   string
-	AudioPrecision  string
-	AudioSampleRate string
+	DocumentID         string
+	CreatedBy          string
+	MachineName        string
+	SegmentFileName    string
+	SegmentFileSize    string
+	AudioBitRate       string
+	AudioDuration      string
+	AudioPrecision     string
+	AudioSampleRate    string
+	ProcessingProgress string
 }

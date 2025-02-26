@@ -9,6 +9,7 @@
         <th width="80">PC</th>
         <th width="280">Segment</th>
         <th width="80">Size</th>
+        <th width="70">Queue</th>
         <th>WAV Meta Data</th>
         <th width="80">Open</th>
     </tr>
@@ -20,6 +21,7 @@
         <td>{{.MachineName}}</td>
         <td>{{.SegmentFileName}}</td>
         <td>{{.SegmentFileSize}}</td>
+        <td>{{.ProcessingProgress}}</td>
         <td>
             <smaller>
                 Bit Rate: {{.AudioBitRate}}<br>
