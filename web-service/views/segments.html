@@ -22,19 +22,15 @@
         <td>{{.SegmentFileSize}}</td>
         <td>
             <smaller>
-                BitRate: {{.AudioBitRate}}<br>
-                Duration: {{.AudioDuration}}
+                Bit Rate: {{.AudioBitRate}}<br>
+                Sampling: {{.AudioSampleRate}}<br>
+                Precision: {{.AudioPrecision}}<br>
+                Duration: {{.AudioDuration}}<br>
             </smaller>
         </td>
         <td></td>
     </tr>
 
-    <!--
-    &audioSegment.AudioBitRate,
-    &audioSegment.AudioDuration,
-    &audioSegment.AudioPrecision,
-    &audioSegment.AudioSampleRate
-    -->
     {{end -}}
 </table>
 

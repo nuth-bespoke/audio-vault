@@ -185,7 +185,7 @@ func (app *App) SoxGetMetadata() {
 						app.SoxParseMetadata("Bit Rate", lines),
 						app.SoxParseMetadata("Duration", lines),
 						app.SoxParseMetadata("Precision", lines),
-						app.SoxParseMetadata("Precision", lines),
+						app.SoxParseMetadata("Sample Rate", lines),
 						filename)
 				}
 			}
