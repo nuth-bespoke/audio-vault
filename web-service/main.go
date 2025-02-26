@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	html "html/template"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"os/signal"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -55,6 +57,11 @@ func (app *App) createFolderTree(path string) {
 		fmt.Println("FATAL:" + err.Error())
 		os.Exit(1)
 	}
+}
+
+func (app *App) checkFileExists(filePath string) bool {
+	_, error := os.Stat(filePath)
+	return !errors.Is(error, os.ErrNotExist)
 }
 
 func (app *App) createFolderStructure() {
@@ -123,8 +130,15 @@ func (app *App) monitorOperatingSystemSignals() {
 func (app *App) SoxParseMetadata(prefix string, data []string) string {
 	for _, row := range data {
 		if strings.HasPrefix(row, prefix) {
-			values := strings.Split(row, ":")
-			return strings.TrimSpace(values[1])
+			if prefix == "Duration" {
+				// duration uses different parsing as its got the
+				// time indicators which are also : characters
+				values := strings.Split(row, ":")
+				return strings.TrimSpace(values[1]) + strings.TrimSpace(values[2]) + strings.TrimSpace(values[3])
+			} else {
+				values := strings.Split(row, ":")
+				return strings.TrimSpace(values[1])
+			}
 		}
 	}
 	return ""
@@ -145,17 +159,36 @@ func (app *App) SoxGetMetadata() {
 		if timerEnabled {
 			timerEnabled = false
 
-			cmd := exec.Command(soxExecutable, "--info", app.executableFolder+"vault/segments/98767978-0999994H-12345-1.wav")
-			out, err := cmd.Output()
-			if err != nil {
-				log.Fatal("could not run command: ", err)
+			segments := strings.Split(app.DBAudioVaultGetSegmentsPendingMetaData(), `^`)
+			for _, filename := range segments {
+				if len(filename) == 0 {
+					break
+				}
+
+				filenamePath := app.executableFolder + "vault/segments/" + filename
+				if app.checkFileExists(filenamePath) {
+					log.Println("INFO: getting sox --info for " + filenamePath)
+
+					cmd := exec.Command(soxExecutable, "--info", filenamePath)
+					out, err := cmd.Output()
+					if err != nil {
+						if exitError, ok := err.(*exec.ExitError); ok {
+							log.Println("ERR: sox --info return code " + strconv.Itoa(exitError.ExitCode()))
+							break
+						}
+						log.Println("ERR: could not run command, ", err.Error())
+						break
+					}
+
+					lines := strings.Split(string(out), "\n")
+					app.DBAudioVaultUpdateSegmentMetadata(
+						app.SoxParseMetadata("Bit Rate", lines),
+						app.SoxParseMetadata("Duration", lines),
+						app.SoxParseMetadata("Precision", lines),
+						app.SoxParseMetadata("Precision", lines),
+						filename)
+				}
 			}
-
-			output := string(out)
-			lines := strings.Split(output, "\n")
-
-			fmt.Println(app.SoxParseMetadata("Precision", lines))
-			fmt.Println(app.SoxParseMetadata("Bit Rate", lines))
 
 			time.Sleep(5 * time.Second)
 			timerEnabled = true

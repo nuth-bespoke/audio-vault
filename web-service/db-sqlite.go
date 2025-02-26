@@ -59,12 +59,44 @@ func (app *App) DBAudioVaultGetSegments() string {
 		segments.Segments = append(segments.Segments, audioSegment)
 	}
 
+	rows.Close()
+
 	err = app.tplHTML.ExecuteTemplate(&tplBuffer, "segments-listing", segments)
 	if err != nil {
 		log.Println("ERR:" + err.Error())
 	}
 
 	return tplBuffer.String()
+}
+
+func (app *App) DBAudioVaultGetSegmentsPendingMetaData() string {
+	var err error
+	var rows *sql.Rows
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			SegmentFileName
+		 FROM Segments
+		WHERE ProcessingProgress = 0
+		ORDER BY DocumentID
+		LIMIT 0, 10;`)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	var SegmentsToProcess string
+	for rows.Next() {
+		var SegmentFileName string
+
+		if err = rows.Scan(&SegmentFileName); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		SegmentsToProcess = SegmentsToProcess + SegmentFileName + `^`
+	}
+
+	rows.Close()
+	return SegmentsToProcess
 }
 
 func (app *App) DBAudioVaultOpen() {
@@ -106,5 +138,22 @@ PRAGMA temp_store = memory;`
 	if err != nil {
 		log.Println("FATAL:Setting Pragmas on SQLite Writer :" + err.Error())
 		os.Exit(1)
+	}
+}
+
+func (app *App) DBAudioVaultUpdateSegmentMetadata(bitRate, duration, precision, sampleRate, filename string) {
+
+	var sql = `
+		UPDATE Segments SET
+			AudioBitRate = ?,
+			AudioDuration = ?,
+			AudioPrecision = ?,
+			AudioSampleRate = ?,
+			ProcessingProgress = 1
+		WHERE SegmentFileName = ?`
+
+	_, err := app.sqliteWriter.Exec(sql, bitRate, duration, precision, sampleRate, filename)
+	if err != nil {
+		log.Println("FATAL:Updating Segments Audio Meta Data :" + err.Error())
 	}
 }
