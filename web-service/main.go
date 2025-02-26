@@ -96,6 +96,12 @@ func (app *App) initialise() {
 		app.Testing = true
 	}
 
+	if runtime.GOOS == "windows" {
+		app.soxExecutable = app.executableFolder + "tools/sox.exe"
+	} else {
+		app.soxExecutable = "/usr/bin/sox"
+	}
+
 	app.GitCommitHashShort = app.GitCommitHash[0:8]
 	app.signalChannel = make(chan os.Signal, 1)
 	signal.Notify(app.signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -145,14 +151,7 @@ func (app *App) SoxParseMetadata(prefix string, data []string) string {
 }
 
 func (app *App) SoxGetMetadata() {
-	var soxExecutable string
 	var timerEnabled bool
-
-	if runtime.GOOS == "windows" {
-		soxExecutable = app.executableFolder + "tools/sox.exe"
-	} else {
-		soxExecutable = "/usr/bin/sox"
-	}
 
 	timerEnabled = true
 	for {
@@ -169,7 +168,7 @@ func (app *App) SoxGetMetadata() {
 				if app.checkFileExists(filenamePath) {
 					log.Println("INFO: getting sox --info for " + filenamePath)
 
-					cmd := exec.Command(soxExecutable, "--info", filenamePath)
+					cmd := exec.Command(app.soxExecutable, "--info", filenamePath)
 					out, err := cmd.Output()
 					if err != nil {
 						if exitError, ok := err.(*exec.ExitError); ok {

@@ -11,6 +11,7 @@ type App struct {
 	executableFolder   string         // the folder the binary was executed from
 	portNumber         string         // the port number to run the web server on
 	signalChannel      chan os.Signal // channel to monitor operating system signals
+	soxExecutable      string         // the full path to the SoX executable
 	tplHTML            *html.Template // pointer to all the HTML templates (views)
 	sqliteReader       *sql.DB
 	sqliteWriter       *sql.DB
