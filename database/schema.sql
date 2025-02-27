@@ -32,6 +32,7 @@ CREATE TABLE Segments (
     AudioDuration       TEXT NOT NULL DEFAULT '?',
     AudioPrecision      TEXT NOT NULL DEFAULT '?',
     AudioSampleRate     TEXT NOT NULL DEFAULT '?',
+    SoxStatusCode       INTEGER NOT NULL DEFAULT 0,
     ProcessingProgress  INTEGER NOT NULL DEFAULT 0, -- 0 = Not Processed
                                                     -- 1 = Meta Data Retrieved
                                                     -- 2 = Normalised Version Created

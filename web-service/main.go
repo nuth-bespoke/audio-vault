@@ -174,6 +174,7 @@ func (app *App) SoxGetMetadata() {
 					if err != nil {
 						if exitError, ok := err.(*exec.ExitError); ok {
 							log.Println("ERR: sox --info return code " + strconv.Itoa(exitError.ExitCode()))
+							app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, exitError.ExitCode())
 							break
 						}
 						log.Println("ERR: could not run command, ", err.Error())
@@ -214,28 +215,21 @@ func (app *App) SoxNormaliseSegments() {
 				if app.checkFileExists(filenamePath) {
 					log.Println("INFO: getting sox --norm for " + filenamePath)
 
-					//sox --norm 91817201-202406100959-1.wav -r 48000 -c 1 1.wav
 					cmd := exec.Command(app.soxExecutable, "--norm", filenamePath, "-r 48000", "-c 1", filenamePath+".normal.wav")
 					out, err := cmd.Output()
 					if err != nil {
 						if exitError, ok := err.(*exec.ExitError); ok {
 							log.Println("ERR: sox --norm return code " + strconv.Itoa(exitError.ExitCode()))
+							app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, exitError.ExitCode())
 							break
 						}
 						log.Println("ERR: could not run command, ", err.Error())
 						break
 					}
 
-					fmt.Println(out)
-					break
+					_ = out
 
-					// lines := strings.Split(string(out), "\n")
-					// app.DBAudioVaultUpdateSegmentMetadata(
-					// 	app.SoxParseMetadata("Bit Rate", lines),
-					// 	app.SoxParseMetadata("Duration", lines),
-					// 	app.SoxParseMetadata("Precision", lines),
-					// 	app.SoxParseMetadata("Sample Rate", lines),
-					// 	filename)
+					app.DBAudioVaultUpdateSegmentNormalised(filename)
 				}
 			}
 

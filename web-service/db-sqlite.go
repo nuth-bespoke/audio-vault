@@ -34,7 +34,8 @@ func (app *App) DBAudioVaultGetSegments() string {
 			Segments.AudioDuration,
 			Segments.AudioPrecision,
 			Segments.AudioSampleRate,
-			Segments.ProcessingProgress
+			Segments.ProcessingProgress,
+			Segments.SoxStatusCode
 		FROM Segments
 		LEFT JOIN Dictations ON Segments.DocumentID = Dictations.DocumentID
 		WHERE ProcessingProgress <= 2
@@ -56,7 +57,8 @@ func (app *App) DBAudioVaultGetSegments() string {
 			&audioSegment.AudioDuration,
 			&audioSegment.AudioPrecision,
 			&audioSegment.AudioSampleRate,
-			&audioSegment.ProcessingProgress); err != nil {
+			&audioSegment.ProcessingProgress,
+			&audioSegment.SoxStatusCode); err != nil {
 			log.Println("ERR:" + err.Error())
 		}
 
@@ -148,8 +150,20 @@ PRAGMA temp_store = memory;`
 	}
 }
 
-func (app *App) DBAudioVaultUpdateSegmentMetadata(bitRate, duration, precision, sampleRate, filename string) {
+func (app *App) DBAudioVaultUpdateSegmentNormalised(filename string) {
 
+	var sql = `
+		UPDATE Segments SET
+			ProcessingProgress = 2
+		WHERE SegmentFileName = ?`
+
+	_, err := app.sqliteWriter.Exec(sql, filename)
+	if err != nil {
+		log.Println("FATAL:Updating Segments Normalised :" + err.Error())
+	}
+}
+
+func (app *App) DBAudioVaultUpdateSegmentMetadata(bitRate, duration, precision, sampleRate, filename string) {
 	var sql = `
 		UPDATE Segments SET
 			AudioBitRate = ?,
@@ -162,5 +176,17 @@ func (app *App) DBAudioVaultUpdateSegmentMetadata(bitRate, duration, precision, 
 	_, err := app.sqliteWriter.Exec(sql, bitRate, duration, precision, sampleRate, filename)
 	if err != nil {
 		log.Println("FATAL:Updating Segments Audio Meta Data :" + err.Error())
+	}
+}
+
+func (app *App) DBAudioVaultUpdateSegmentSoxReturnCode(filename string, code int) {
+	var sql = `
+		UPDATE Segments SET
+			SoxStatusCode = ?
+		WHERE SegmentFileName = ?`
+
+	_, err := app.sqliteWriter.Exec(sql, code, filename)
+	if err != nil {
+		log.Println("FATAL:Updating Segments Sox Return Code :" + err.Error())
 	}
 }

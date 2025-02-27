@@ -45,4 +45,5 @@ type segment struct {
 	AudioPrecision     string
 	AudioSampleRate    string
 	ProcessingProgress string
+	SoxStatusCode      string
 }
