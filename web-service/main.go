@@ -173,7 +173,9 @@ func (app *App) SoxGetMetadata() {
 					out, err := cmd.Output()
 					if err != nil {
 						if exitError, ok := err.(*exec.ExitError); ok {
-							log.Println("ERR: sox --info return code " + strconv.Itoa(exitError.ExitCode()))
+							errorMessage := "ERR: sox --info return code " + strconv.Itoa(exitError.ExitCode())
+							log.Println(errorMessage)
+							app.DBAudioVaultInsertAuditEvent(filename, errorMessage)
 							app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, exitError.ExitCode())
 							break
 						}
@@ -188,6 +190,11 @@ func (app *App) SoxGetMetadata() {
 						app.SoxParseMetadata("Precision", lines),
 						app.SoxParseMetadata("Sample Rate", lines),
 						filename)
+
+					app.DBAudioVaultInsertAuditEvent(filename,
+						"sox --info successful with "+
+							strconv.Itoa(len(lines))+
+							" meta data items returned")
 				}
 			}
 
@@ -213,13 +220,16 @@ func (app *App) SoxNormaliseSegments() {
 
 				filenamePath := app.executableFolder + "vault/segments/" + filename
 				if app.checkFileExists(filenamePath) {
+
 					log.Println("INFO: getting sox --norm for " + filenamePath)
 
 					cmd := exec.Command(app.soxExecutable, "--norm", filenamePath, "-r 48000", "-c 1", filenamePath+".normal.wav")
 					out, err := cmd.Output()
 					if err != nil {
 						if exitError, ok := err.(*exec.ExitError); ok {
-							log.Println("ERR: sox --norm return code " + strconv.Itoa(exitError.ExitCode()))
+							errorMessage := "ERR: sox --norm return code " + strconv.Itoa(exitError.ExitCode())
+							log.Println(errorMessage)
+							app.DBAudioVaultInsertAuditEvent(filename, errorMessage)
 							app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, exitError.ExitCode())
 							break
 						}
@@ -228,8 +238,8 @@ func (app *App) SoxNormaliseSegments() {
 					}
 
 					_ = out
-
 					app.DBAudioVaultUpdateSegmentNormalised(filename)
+					app.DBAudioVaultInsertAuditEvent(filename, "sox --norm successful")
 				}
 			}
 

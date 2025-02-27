@@ -4,6 +4,18 @@
 PRAGMA user_version = 1; -- https://www.sqlite.org/pragma.html#pragma_user_version
 PRAGMA journal_mode = WAL; -- https://www.sqlite.org/pragma.html#pragma_journal_mode
 
+DROP TABLE IF EXISTS AuditEvents;
+
+CREATE TABLE AuditEvents (
+    EventID             INTEGER PRIMARY KEY,
+    EventAt             TEXT NOT NULL,
+    SegmentFileName     TEXT NOT NULL,
+    EventMessage        TEXT NOT NULL
+);
+
+CREATE INDEX idx_audit_events_filename ON AuditEvents (SegmentFileName, EventAt);
+
+
 DROP TABLE IF EXISTS Dictations;
 
 CREATE TABLE Dictations (
@@ -45,10 +57,10 @@ CREATE INDEX idx_segments_pending ON Segments
     WHERE ProcessingProgress <= 2;
 
 INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
-    VALUES (98767978, '0999994H', 'BRADLEYP6', 'P4X045', DATE('now'), 2);
+    VALUES (98767978, '0999994H', 'BRADLEYP6', 'P4X045', datetime(current_timestamp, 'localtime'), 2);
 
 INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
-    VALUES (98767970, '0999994H', 'BRADLEYP0', 'P4000', DATE('now'), 2);
+    VALUES (98767970, '0999994H', 'BRADLEYP0', 'P4000', datetime(current_timestamp, 'localtime'), 2);
 
 INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
     VALUES ('98767978-0999994H-12345-1.wav', 98767978, 567890, 1);
@@ -80,4 +92,5 @@ FROM Dictations d
 LEFT JOIN Segments s ON d.DocumentID = s.DocumentID
 WHERE d.CompletedAt IS NULL
 GROUP BY d.DocumentID
-HAVING COUNT(s.DocumentID) = d.SegmentCount AND ProcessingProgress = 2;
+HAVING COUNT(s.DocumentID) = d.SegmentCount AND ProcessingProgress = 0
+LIMIT 0, 10;

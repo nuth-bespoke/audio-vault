@@ -26,6 +26,7 @@ func (app *App) routeStream(w http.ResponseWriter, r *http.Request) {
 	var file *os.File
 
 	audioFilename = strings.Replace(r.URL.Path, "/stream/", "", -1)
+	app.DBAudioVaultInsertAuditEvent(audioFilename, "stream requested - user played the segment")
 
 	switch r.Method {
 	case http.MethodGet:
@@ -138,10 +139,14 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	app.DBAudioVaultInsertAuditEvent(header.Filename, "storing file")
+
 	// create the file on disk in the vault folders
 	dst, err := os.Create(app.executableFolder + "vault/segments/" + header.Filename)
 	if err != nil {
-		log.Println("ERR: 500 error creating file entry " + err.Error())
+		errorMessage := "ERR: 500 error creating file entry for " + header.Filename + " : " + err.Error()
+		log.Println(errorMessage)
+		app.DBAudioVaultInsertAuditEvent(header.Filename, errorMessage)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - " + err.Error()))
 		return
@@ -150,13 +155,16 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 
 	// copy the file to the new file location
 	if _, err := io.Copy(dst, file); err != nil {
-		log.Println("ERR: 500 error writing data to file " + err.Error())
+		errorMessage := "ERR: 500 error writing data to file " + header.Filename + " : " + err.Error()
+		log.Println(errorMessage)
+		app.DBAudioVaultInsertAuditEvent(header.Filename, errorMessage)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - " + err.Error()))
 		return
 	}
 
 	// w.Header().Set("K", "V")
+	app.DBAudioVaultInsertAuditEvent(header.Filename, "file saved successfully")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("200 - " + header.Filename + " received"))
 }

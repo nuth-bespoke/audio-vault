@@ -190,3 +190,15 @@ func (app *App) DBAudioVaultUpdateSegmentSoxReturnCode(filename string, code int
 		log.Println("FATAL:Updating Segments Sox Return Code :" + err.Error())
 	}
 }
+
+func (app *App) DBAudioVaultInsertAuditEvent(filename, message string) {
+	var sql = `
+		INSERT INTO AuditEvents
+			(EventAt, SegmentFileName, EventMessage)
+			VALUES (datetime(current_timestamp, 'localtime'), ?, ?)`
+
+	_, err := app.sqliteWriter.Exec(sql, filename, message)
+	if err != nil {
+		log.Println("FATAL:Inserting Audit Event : " + filename + " : " + message + " :" + err.Error())
+	}
+}
