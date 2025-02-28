@@ -42,6 +42,7 @@ func main() {
 
 	go app.SoxGetMetadata()
 	go app.SoxNormaliseSegments()
+	go app.SoxConcatenateSegments()
 
 	app.configureRoutes()
 	fmt.Println("HTTP web service loaded.")
@@ -167,9 +168,11 @@ func (app *App) SoxGetMetadata() {
 
 				filenamePath := app.executableFolder + "vault/segments/" + filename
 				if app.checkFileExists(filenamePath) {
-					log.Println("INFO: getting sox --info for " + filenamePath)
 
-					cmd := exec.Command(app.soxExecutable, "--info", filenamePath)
+					sox_args := []string{"--info", filenamePath}
+					log.Println("INFO: sox ", sox_args)
+
+					cmd := exec.Command(app.soxExecutable, sox_args...)
 					out, err := cmd.Output()
 					if err != nil {
 						if exitError, ok := err.(*exec.ExitError); ok {
@@ -191,6 +194,7 @@ func (app *App) SoxGetMetadata() {
 						app.SoxParseMetadata("Sample Rate", lines),
 						filename)
 
+					app.DBAudioVaultInsertAuditEvent(filename, "sox []"+strings.Join(sox_args, " ")+"]")
 					app.DBAudioVaultInsertAuditEvent(filename,
 						"sox --info successful with "+
 							strconv.Itoa(len(lines))+
@@ -221,9 +225,10 @@ func (app *App) SoxNormaliseSegments() {
 				filenamePath := app.executableFolder + "vault/segments/" + filename
 				if app.checkFileExists(filenamePath) {
 
-					log.Println("INFO: getting sox --norm for " + filenamePath)
+					sox_args := []string{"--norm", filenamePath, "-r 48000", "-c 1", filenamePath + ".normal.wav"}
+					log.Println("INFO: sox ", sox_args)
 
-					cmd := exec.Command(app.soxExecutable, "--norm", filenamePath, "-r 48000", "-c 1", filenamePath+".normal.wav")
+					cmd := exec.Command(app.soxExecutable, sox_args...)
 					out, err := cmd.Output()
 					if err != nil {
 						if exitError, ok := err.(*exec.ExitError); ok {
@@ -239,7 +244,60 @@ func (app *App) SoxNormaliseSegments() {
 
 					_ = out
 					app.DBAudioVaultUpdateSegmentNormalised(filename)
-					app.DBAudioVaultInsertAuditEvent(filename, "sox --norm successful")
+					app.DBAudioVaultInsertAuditEvent(filename, "sox ["+strings.Join(sox_args, " ")+"]")
+				}
+			}
+
+			time.Sleep(5 * time.Second)
+			timerEnabled = true
+		}
+	}
+}
+
+func (app *App) SoxConcatenateSegments() {
+	var timerEnabled bool
+
+	timerEnabled = true
+	for {
+		if timerEnabled {
+			timerEnabled = false
+
+			DocumentIDs := app.DBAudioVaultGetSegmentsReadyForConcatConcatenation()
+			if len(DocumentIDs) > 0 {
+				for _, documentID := range DocumentIDs {
+
+					sox_args := []string{"--combine", "concatenate"}
+					filenames := app.DBAudioVaultGetSegmentsByDocumentID(documentID)
+					if len(filenames) > 0 {
+						for _, filename := range filenames {
+							if len(filename) >= 1 {
+								sox_args = append(sox_args, app.executableFolder+"vault/segments/"+filename+".normal.wav")
+							}
+						}
+					}
+					sox_args = append(sox_args, "vault/dictations/"+documentID+".wav")
+
+					log.Println("INFO: sox ", sox_args)
+					cmd := exec.Command(app.soxExecutable, sox_args...)
+
+					out, err := cmd.CombinedOutput()
+					if err != nil {
+						if exitError, ok := err.(*exec.ExitError); ok {
+							errorMessage := "ERR: sox --combine concatenate return code " + strconv.Itoa(exitError.ExitCode())
+							log.Println(errorMessage)
+							app.DBAudioVaultInsertAuditEvent(documentID, errorMessage)
+							app.DBAudioVaultUpdateSegmentSoxReturnCode(documentID, exitError.ExitCode())
+							break
+						}
+						log.Println("ERR: could not run command, ", err.Error())
+						break
+					}
+
+					_ = out
+
+					// TODO: create function to update Segments table
+					// TODO: create function to update Dictations table
+					app.DBAudioVaultInsertAuditEvent(documentID, "sox []"+strings.Join(sox_args, " ")+"]")
 				}
 			}
 

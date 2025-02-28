@@ -78,6 +78,35 @@ func (app *App) DBAudioVaultGetSegments() string {
 	return tplBuffer.String()
 }
 
+func (app *App) DBAudioVaultGetSegmentsByDocumentID(id string) []string {
+	var err error
+	var rows *sql.Rows
+	var results []string
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			SegmentFileName
+		FROM Segments
+		WHERE DocumentID = ?
+		ORDER BY SegmentFileOrder`, id)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	for rows.Next() {
+		var SegmentFileName string
+
+		if err = rows.Scan(&SegmentFileName); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		results = append(results, SegmentFileName)
+	}
+
+	rows.Close()
+	return results
+}
+
 func (app *App) DBAudioVaultGetSegmentsByProgressID(progressID int) string {
 	var err error
 	var rows *sql.Rows
@@ -106,6 +135,47 @@ func (app *App) DBAudioVaultGetSegmentsByProgressID(progressID int) string {
 
 	rows.Close()
 	return SegmentsToProcess
+}
+
+func (app *App) DBAudioVaultGetSegmentsReadyForConcatConcatenation() []string {
+	var err error
+	var rows *sql.Rows
+	var results []string
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			d.DocumentID,
+			d.SegmentCount,
+			COUNT(s.DocumentID) AS Actual_Segment_Count
+		FROM Dictations d
+		LEFT JOIN Segments s ON d.DocumentID = s.DocumentID
+		WHERE d.CompletedAt IS NULL
+		GROUP BY d.DocumentID
+		HAVING COUNT(s.DocumentID) = d.SegmentCount AND ProcessingProgress = 2
+		LIMIT 0, 10;`)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	for rows.Next() {
+		var DocumentID string
+		var DictationsSegmentCount int
+		var ReadySegmentCount int
+
+		if err = rows.Scan(
+			&DocumentID,
+			&DictationsSegmentCount,
+			&ReadySegmentCount); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		if DictationsSegmentCount == ReadySegmentCount {
+			results = append(results, DocumentID)
+		}
+	}
+
+	rows.Close()
+	return results
 }
 
 func (app *App) DBAudioVaultOpen() {
