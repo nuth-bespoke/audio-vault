@@ -15,6 +15,14 @@ Audio Vault's key features:
 - Handles the safe storage of audio orphans.
 - Implements audio retention polices.
 
+![Audio Vault](/assets/screenshot.png?raw=true)
+
+After individual segments are stitched together the system generates a wav form image of the resulting audio dictation.
+
+![Audio Vault](/assets/audiowaveform.png?raw=true)
+
+Future versions will incorporate [peaks.js](https://github.com/bbc/peaks.js) to provide real-time wav form syncronisation with the audio playback.
+
 ## Architectural Decisions
 
 - The system will be developed using the [Go](https://go.dev/) programming language so that it can be cross compiled to Linux and Windows.
@@ -25,6 +33,8 @@ Audio Vault's key features:
 - The system will use [SQLite Rsync](https://www.sqlite.org/rsync.html) to backup the SQLite database to a warm standby server.
 - The system will use [rClone](https://rclone.org/local/) to sync audio to a warm standby server.
 - The system will offload audio processing to [SoX](https://linux.die.net/man/1/sox) Sound eXchange.
+- The system will offload audio wav form generation to [audiowaveform](https://github.com/bbc/audiowaveform)
+
 
 ## Endpoints
 
