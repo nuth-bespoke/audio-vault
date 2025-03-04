@@ -45,6 +45,7 @@ func (app *App) routeDictation(w http.ResponseWriter, r *http.Request) {
 
 		auditEventsIDs := app.DBAudioVaultGetSegmentsByDocumentID(s.Dictation.DocumentID)
 		auditEventsIDs = append(auditEventsIDs, s.Dictation.DocumentID)
+		auditEventsIDs = append(auditEventsIDs, s.Dictation.DocumentID+".wav")
 
 		// build an SQL IN statement to grab all audit events
 		instr := "[" + strings.Join(auditEventsIDs, "^") + "]"
@@ -80,7 +81,7 @@ func (app *App) routeStream(w http.ResponseWriter, r *http.Request) {
 	var file *os.File
 
 	audioFilename = strings.Replace(r.URL.Path, "/stream/", "", -1)
-	app.DBAudioVaultInsertAuditEvent(audioFilename, "stream requested - user played the segment")
+	app.DBAudioVaultInsertAuditEvent(audioFilename, "stream [user played the audio for "+audioFilename+"]")
 
 	switch r.Method {
 	case http.MethodGet:
