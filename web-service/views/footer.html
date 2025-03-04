@@ -17,50 +17,60 @@
 
 
 <script type="text/javascript">
-    const eventSrc = new EventSource("server-side-events/");
-    const cpu = document.getElementById("cpu");
-    const segments = document.getElementById("segments");
-    const paused_chkbox = document.getElementById('paused');
 
-    eventSrc.addEventListener("cpu", (event) => {
-        cpu.textContent = event.data;
-    });
+    if (document.title.includes('Dashboard')) {
+        /*
+            only include code to check server side events
+            if the web page title includes the word 'Dashboard'
+        */
+        const eventSrc = new EventSource("server-side-events/");
+        const cpu = document.getElementById("cpu");
+        const segments = document.getElementById("segments");
+        const paused_chkbox = document.getElementById('paused');
 
-    eventSrc.addEventListener("segments", (event) => {
-        if (paused_chkbox === null) {
-            console.log("paused_chkbox element does not exist");
-        } else if (paused_chkbox.checked) {
-            console.log("not updating segments table as paused")
-        } else {
-            segments.innerHTML = event.data;
-            console.log("updated segments table")
-        }
-    });
+        eventSrc.addEventListener("cpu", (event) => {
+            cpu.textContent = event.data;
+        });
 
-    /* 
-        toggle on/off all audio controls based on the status
-        of the paused checked box. Can only play audio if the
-        refresh is paused as a refresh will update the DOM
-    */
-    if (paused_chkbox !== null) {
-        paused_chkbox.addEventListener("change", function() {
-            if (paused_chkbox.checked) {
-                var audioElements = document.getElementsByTagName("audio");
-                for (var i = 0; i < audioElements.length; i++) {
-                    audioElements[i].setAttribute("controls", "controls");
-                }
+        eventSrc.addEventListener("segments", (event) => {
+            if (paused_chkbox === null) {
+                console.log("paused_chkbox element does not exist");
+            } else if (paused_chkbox.checked) {
+                console.log("not updating segments table as paused")
             } else {
-                var audioElements = document.getElementsByTagName("audio");
-                for (var i = 0; i < audioElements.length; i++) {
-                    audioElements[i].removeAttribute("controls");
-                }
+                segments.innerHTML = event.data;
+                console.log("updated segments table")
             }
         });
-    }
 
-    eventSrc.onerror = (err) => {
-        console.log("sse error", err);
-    };
+        /* 
+            toggle on/off all audio controls based on the status
+            of the paused checked box. Can only play audio if the
+            refresh is paused as a refresh will update the DOM
+        */
+        if (paused_chkbox !== null) {
+            paused_chkbox.addEventListener("change", function() {
+                if (paused_chkbox.checked) {
+                    var audioElements = document.getElementsByTagName("audio");
+                    for (var i = 0; i < audioElements.length; i++) {
+                        audioElements[i].setAttribute("controls", "controls");
+                    }
+                } else {
+                    var audioElements = document.getElementsByTagName("audio");
+                    for (var i = 0; i < audioElements.length; i++) {
+                        audioElements[i].removeAttribute("controls");
+                    }
+                }
+            });
+        }
+
+        eventSrc.onerror = (err) => {
+            console.log("sse error", err);
+        };
+    } else {
+        const serverUsage = document.getElementById("server-usage");
+        serverUsage.style.display = 'none';
+    }
 </script>
 </body>
 </html>

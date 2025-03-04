@@ -8,11 +8,54 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
 )
+
+func (app *App) routeDictation(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var tplBuffer bytes.Buffer
+	var documentID string
+
+	s := requestState{Application: *app}
+	s.Dictation.WaveformExists = false
+	s.Dictation.DictationAudioExists = false
+
+	if strings.ToUpper(r.Method) == "GET" {
+		documentID = strings.Replace(r.URL.Path, "/dictation/", "", -1)
+		if _, err := strconv.Atoi(documentID); err == nil {
+			s.Dictation.DocumentID = documentID
+		} else {
+			s.Dictation.DocumentID = "0"
+		}
+
+		s.WebPageTitle = "Dictation (" + s.Dictation.DocumentID + ")"
+
+		if app.checkFileExists(app.executableFolder + "vault/dictations/" + s.Dictation.DocumentID + ".png") {
+			s.Dictation.WaveformExists = true
+		}
+		if app.checkFileExists(app.executableFolder + "vault/dictations/" + s.Dictation.DocumentID + ".wav") {
+			s.Dictation.DictationAudioExists = true
+		}
+
+		s.Dictation.SegmentHTML = app.DBAudioVaultGetSegmentsDataByDocumentID(s.Dictation.DocumentID)
+
+		err = app.tplHTML.ExecuteTemplate(&tplBuffer, "dictation", s)
+		if err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		w.WriteHeader(200)
+		w.Write(tplBuffer.Bytes())
+	} else {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte("Method not allowed. :-("))
+	}
+}
 
 func (app *App) routeHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
@@ -31,7 +74,17 @@ func (app *App) routeStream(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		file, err = os.Open(app.executableFolder + "vault/segments/" + audioFilename)
+		var audioFolder string
+		audioFolder = ""
+
+		if app.checkFileExists("vault/segments/" + audioFilename) {
+			audioFolder = "vault/segments/"
+		}
+		if app.checkFileExists("vault/dictations/" + audioFilename) {
+			audioFolder = "vault/dictations/"
+		}
+
+		file, err = os.Open(app.executableFolder + audioFolder + audioFilename)
 		if err != nil {
 			log.Println("ERR: opening /stream/" + audioFilename)
 		}
@@ -190,5 +243,39 @@ func (app *App) routeTesting(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte("Method not allowed. :-("))
+	}
+}
+
+func (app *App) routeWaveForm(w http.ResponseWriter, r *http.Request) {
+	var waveFormFilename string
+	var err error
+	var file *os.File
+
+	waveFormFilename = strings.Replace(r.URL.Path, "/waveform/", "", -1)
+
+	switch r.Method {
+	case http.MethodGet:
+
+		file, err = os.Open(app.executableFolder + "vault/dictations/" + waveFormFilename)
+		if err != nil {
+			log.Println("ERR: opening /waveform/" + waveFormFilename)
+		}
+
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				log.Println("ERR: closing /waveform/" + waveFormFilename)
+			}
+		}()
+
+		w.Header().Set("Cache-Control", "public, max-age=63072000, immutable")
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Server", "AuditVault")
+		w.WriteHeader(http.StatusOK)
+
+		_, err = io.Copy(w, file)
+		if err != nil {
+			log.Println("ERR: writing /waveform/" + waveFormFilename)
+		}
 	}
 }

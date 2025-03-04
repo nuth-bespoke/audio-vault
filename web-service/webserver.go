@@ -10,8 +10,10 @@ import (
 
 func (app *App) configureRoutes() {
 	http.HandleFunc("/health-check/", app.webServerHeaders(app.routeHealthCheck))
+	http.HandleFunc("/dictation/", app.webServerHeaders(app.routeDictation))
 	http.HandleFunc("/testing/", app.webServerHeaders(app.routeTesting))
 	http.HandleFunc("/server-side-events/", app.webServerHeaders(app.routeServerSideEvents))
+	http.HandleFunc("/waveform/", app.routeWaveForm)
 
 	http.HandleFunc("/store/", app.routeStore)
 	http.HandleFunc("/stream/", app.routeStream)

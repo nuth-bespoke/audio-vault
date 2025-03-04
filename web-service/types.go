@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"html/template"
 	html "html/template"
 	"os"
 )
@@ -29,6 +30,14 @@ type App struct {
 type requestState struct {
 	Application  App
 	WebPageTitle string
+	Dictation    dictation
+}
+
+type dictation struct {
+	DocumentID           string
+	WaveformExists       bool
+	DictationAudioExists bool
+	SegmentHTML          template.HTML
 }
 
 type segments struct {
@@ -36,15 +45,16 @@ type segments struct {
 }
 
 type segment struct {
-	DocumentID         string
-	CreatedBy          string
-	MachineName        string
-	SegmentFileName    string
-	SegmentFileSize    string
-	AudioBitRate       string
-	AudioDuration      string
-	AudioPrecision     string
-	AudioSampleRate    string
-	ProcessingProgress string
-	SoxStatusCode      string
+	IncludePlayerControls bool
+	DocumentID            string
+	CreatedBy             string
+	MachineName           string
+	SegmentFileName       string
+	SegmentFileSize       string
+	AudioBitRate          string
+	AudioDuration         string
+	AudioPrecision        string
+	AudioSampleRate       string
+	ProcessingProgress    string
+	SoxStatusCode         string
 }

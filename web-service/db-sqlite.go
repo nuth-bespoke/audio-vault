@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"database/sql"
+	"html/template"
 	"log"
 	"os"
 	"runtime"
@@ -64,7 +65,7 @@ func (app *App) DBAudioVaultGetSegments() string {
 
 		fileSize, _ := strconv.ParseUint(audioSegment.SegmentFileSize, 0, 64)
 		audioSegment.SegmentFileSize = humanize.Bytes(fileSize)
-
+		audioSegment.IncludePlayerControls = false
 		segments.Segments = append(segments.Segments, audioSegment)
 	}
 
@@ -76,6 +77,69 @@ func (app *App) DBAudioVaultGetSegments() string {
 	}
 
 	return tplBuffer.String()
+}
+
+func (app *App) DBAudioVaultGetSegmentsDataByDocumentID(id string) template.HTML {
+	var err error
+	var rows *sql.Rows
+	var tplBuffer bytes.Buffer
+
+	segments := segments{}
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			Segments.DocumentID,
+			Dictations.CreatedBy,
+			Dictations.MachineName,
+			Segments.SegmentFileName,
+			Segments.SegmentFileSize,
+			Segments.AudioBitRate,
+			Segments.AudioDuration,
+			Segments.AudioPrecision,
+			Segments.AudioSampleRate,
+			Segments.ProcessingProgress,
+			Segments.SoxStatusCode
+		FROM Segments
+		LEFT JOIN Dictations ON Segments.DocumentID = Dictations.DocumentID
+		WHERE Segments.DocumentID = ?
+		ORDER BY Segments.DocumentID, SegmentFileOrder;`, id)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	for rows.Next() {
+		var audioSegment segment
+
+		if err = rows.Scan(
+			&audioSegment.DocumentID,
+			&audioSegment.CreatedBy,
+			&audioSegment.MachineName,
+			&audioSegment.SegmentFileName,
+			&audioSegment.SegmentFileSize,
+			&audioSegment.AudioBitRate,
+			&audioSegment.AudioDuration,
+			&audioSegment.AudioPrecision,
+			&audioSegment.AudioSampleRate,
+			&audioSegment.ProcessingProgress,
+			&audioSegment.SoxStatusCode); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		fileSize, _ := strconv.ParseUint(audioSegment.SegmentFileSize, 0, 64)
+		audioSegment.SegmentFileSize = humanize.Bytes(fileSize)
+		audioSegment.IncludePlayerControls = true
+
+		segments.Segments = append(segments.Segments, audioSegment)
+	}
+
+	rows.Close()
+
+	err = app.tplHTML.ExecuteTemplate(&tplBuffer, "segments-listing", segments)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	return (template.HTML(tplBuffer.String()))
 }
 
 func (app *App) DBAudioVaultGetSegmentsByDocumentID(id string) []string {

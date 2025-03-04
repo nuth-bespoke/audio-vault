@@ -32,7 +32,11 @@
             </smaller>
         </td>
         <td>
-            <audio preload="none" controlslist="nofullscreen nodownload noremoteplayback noplaybackrate" src="/stream/{{.SegmentFileName}}"></audio>
+            {{if .IncludePlayerControls -}}
+                <audio controls preload="none" controlslist="nofullscreen nodownload noremoteplayback noplaybackrate" src="/stream/{{.SegmentFileName}}"></audio>
+            {{else}}
+                <audio preload="none" controlslist="nofullscreen nodownload noremoteplayback noplaybackrate" src="/stream/{{.SegmentFileName}}"></audio>
+            {{end -}}
         </td>
     </tr>
 

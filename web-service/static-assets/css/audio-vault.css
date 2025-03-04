@@ -58,6 +58,11 @@ audio {
     width: 100px;
 }
 
+.dictation {
+    margin:0;
+    width: 800px;
+}
+
 aside {
     display: none;
 }

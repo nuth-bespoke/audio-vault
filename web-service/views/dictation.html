@@ -1,0 +1,32 @@
+{{define "dictation" -}}
+
+{{template "header" .}}
+
+<main>
+    <h3>Dictation Audio ({{.Dictation.DocumentID}})</h3>
+    <p></p>
+
+    {{if .Dictation.WaveformExists -}}
+        <p><img src="waveform/{{.Dictation.DocumentID}}.png?{{.Application.GitCommitHash}}" width="800" height="150" alt=""></p>
+    {{end -}}
+
+    {{if .Dictation.DictationAudioExists -}}
+        <audio 
+            class="dictation"
+            controls preload="none"
+            controlslist="nofullscreen nodownload noremoteplayback noplaybackrate"
+            src="/stream/{{.Dictation.DocumentID}}.wav">
+        </audio>
+    {{end -}}
+
+    <h3>Individual Segments/Recordings</h3>
+    <p>These are the individual recordings captured by Fluency Direct<br>
+    Each segment below has been stitched together to produce the digital dictation above.</p>
+    {{.Dictation.SegmentHTML}}
+
+    <h3>Audit Events</h3>
+
+</main>
+
+{{template "footer" .}}
+{{end -}}
