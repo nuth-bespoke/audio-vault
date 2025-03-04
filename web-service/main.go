@@ -72,6 +72,35 @@ func (app *App) createFolderStructure() {
 	app.createFolderTree("vault/segments/")
 }
 
+func (app *App) executeExternalCommand(executable string, arguments []string) (errorCode int, errorMessage string) {
+	var err error
+	var errorMsg string
+	var commandContext string
+	var cmd *exec.Cmd
+	var out []byte
+
+	errorMsg = ""
+	commandContext = " :" + executable + " [" + strings.Join(arguments, " ") + "]"
+
+	log.Println("LAUNCHING" + commandContext)
+
+	cmd = exec.Command(executable, arguments...)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			errorMsg = "ERR" + commandContext
+			log.Println(errorMsg)
+			log.Println(string(out))
+			return exitError.ExitCode(), errorMsg
+		}
+		errorMsg = "ERR: could not run [" + executable + "] " + err.Error()
+		return -1, errorMsg
+	}
+
+	log.Println("SUCCESS" + commandContext)
+	return 0, ""
+}
+
 // set the default values for the application
 func (app *App) initialise() {
 	app.executableFolder = path.Dir(os.Args[0]) + "/"
@@ -99,9 +128,11 @@ func (app *App) initialise() {
 	}
 
 	if runtime.GOOS == "windows" {
-		app.soxExecutable = app.executableFolder + "tools/sox.exe"
+		app.soxExecutable = app.executableFolder + "tools/sox/sox.exe"
+		app.audioWaveFormExecutable = app.executableFolder + "tools/audiowaveform/audiowaveform.exe"
 	} else {
 		app.soxExecutable = "/usr/bin/sox"
+		app.audioWaveFormExecutable = "/usr/bin/audiowaveform"
 	}
 
 	app.GitCommitHashShort = app.GitCommitHash[0:8]
@@ -295,9 +326,22 @@ func (app *App) SoxConcatenateSegments() {
 
 					_ = out
 
+					// generate a PNG of the audio wave form
+					audio_wave_form_args := []string{
+						"-i" + app.executableFolder + "vault/dictations/" + documentID + ".wav",
+						"-o" + app.executableFolder + "vault/dictations/" + documentID + ".png",
+						"-zauto", "-w800", "-h150",
+					}
+					errCode, errMessage := app.executeExternalCommand(app.audioWaveFormExecutable, audio_wave_form_args)
+					if errCode != 0 {
+						app.DBAudioVaultInsertAuditEvent(documentID, errMessage)
+						break
+					}
+
+					app.DBAudioVaultInsertAuditEvent(documentID, "SUCCESS:"+app.audioWaveFormExecutable+" ["+strings.Join(audio_wave_form_args, " ")+"]")
+
 					// TODO: create function to update Segments table
 					// TODO: create function to update Dictations table
-					app.DBAudioVaultInsertAuditEvent(documentID, "sox []"+strings.Join(sox_args, " ")+"]")
 				}
 			}
 

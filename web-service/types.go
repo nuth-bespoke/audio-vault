@@ -7,14 +7,15 @@ import (
 )
 
 type App struct {
-	applicationLogFile *os.File       // file handle to application logs
-	executableFolder   string         // the folder the binary was executed from
-	portNumber         string         // the port number to run the web server on
-	signalChannel      chan os.Signal // channel to monitor operating system signals
-	soxExecutable      string         // the full path to the SoX executable
-	tplHTML            *html.Template // pointer to all the HTML templates (views)
-	sqliteReader       *sql.DB
-	sqliteWriter       *sql.DB
+	applicationLogFile      *os.File       // file handle to application logs
+	executableFolder        string         // the folder the binary was executed from
+	portNumber              string         // the port number to run the web server on
+	signalChannel           chan os.Signal // channel to monitor operating system signals
+	soxExecutable           string         // the full path to the SoX executable
+	audioWaveFormExecutable string         // the full path to the audioeaveform executable
+	tplHTML                 *html.Template // pointer to all the HTML templates (views)
+	sqliteReader            *sql.DB
+	sqliteWriter            *sql.DB
 
 	// Public variables which need to be accessed from the HTML templates/views
 	BaseURL            string // the base URL of the application (different for different hosts)
