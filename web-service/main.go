@@ -72,7 +72,7 @@ func (app *App) createFolderStructure() {
 	app.createFolderTree("vault/segments/")
 }
 
-func (app *App) executeExternalCommand(executable string, arguments []string) (errorCode int, errorMessage string) {
+func (app *App) executeExternalCommand(executable string, arguments []string) (errorCode int, errorMessage string, output string) {
 	var err error
 	var errorMsg string
 	var commandContext string
@@ -80,25 +80,23 @@ func (app *App) executeExternalCommand(executable string, arguments []string) (e
 	var out []byte
 
 	errorMsg = ""
-	commandContext = " :" + executable + " [" + strings.Join(arguments, " ") + "]"
-
-	log.Println("LAUNCHING" + commandContext)
+	commandContext = ":" + executable + " [" + strings.Join(arguments, " ") + "]"
 
 	cmd = exec.Command(executable, arguments...)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			errorMsg = "ERR" + commandContext
+			errorMsg = "FATAL" + commandContext
 			log.Println(errorMsg)
 			log.Println(string(out))
-			return exitError.ExitCode(), errorMsg
+			return exitError.ExitCode(), errorMsg, ""
 		}
-		errorMsg = "ERR: could not run [" + executable + "] " + err.Error()
-		return -1, errorMsg
+		errorMsg = "FATAL: could not run [" + executable + "] " + err.Error()
+		return -1, errorMsg, ""
 	}
 
-	log.Println("SUCCESS" + commandContext)
-	return 0, ""
+	log.Println("INFO: Success" + commandContext)
+	return 0, "", string(out)
 }
 
 // set the default values for the application
@@ -185,6 +183,9 @@ func (app *App) SoxParseMetadata(prefix string, data []string) string {
 
 func (app *App) SoxGetMetadata() {
 	var timerEnabled bool
+	var errCode int
+	var errMessage string
+	var cmdOutput string
 
 	timerEnabled = true
 	for {
@@ -199,25 +200,16 @@ func (app *App) SoxGetMetadata() {
 
 				filenamePath := app.executableFolder + "vault/segments/" + filename
 				if app.checkFileExists(filenamePath) {
-
 					sox_args := []string{"--info", filenamePath}
-					log.Println("INFO: sox ", sox_args)
 
-					cmd := exec.Command(app.soxExecutable, sox_args...)
-					out, err := cmd.Output()
-					if err != nil {
-						if exitError, ok := err.(*exec.ExitError); ok {
-							errorMessage := "ERR: sox --info return code " + strconv.Itoa(exitError.ExitCode())
-							log.Println(errorMessage)
-							app.DBAudioVaultInsertAuditEvent(filename, errorMessage)
-							app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, exitError.ExitCode())
-							break
-						}
-						log.Println("ERR: could not run command, ", err.Error())
+					errCode, errMessage, cmdOutput = app.executeExternalCommand(app.soxExecutable, sox_args)
+					if errCode != 0 {
+						app.DBAudioVaultInsertAuditEvent(filename, errMessage)
+						app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, errCode)
 						break
 					}
 
-					lines := strings.Split(string(out), "\n")
+					lines := strings.Split(string(cmdOutput), "\n")
 					app.DBAudioVaultUpdateSegmentMetadata(
 						app.SoxParseMetadata("Bit Rate", lines),
 						app.SoxParseMetadata("Duration", lines),
@@ -225,7 +217,7 @@ func (app *App) SoxGetMetadata() {
 						app.SoxParseMetadata("Sample Rate", lines),
 						filename)
 
-					app.DBAudioVaultInsertAuditEvent(filename, "sox []"+strings.Join(sox_args, " ")+"]")
+					app.DBAudioVaultInsertAuditEvent(filename, "sox ["+strings.Join(sox_args, " ")+"]")
 					app.DBAudioVaultInsertAuditEvent(filename,
 						"sox --info successful with "+
 							strconv.Itoa(len(lines))+
@@ -241,6 +233,8 @@ func (app *App) SoxGetMetadata() {
 
 func (app *App) SoxNormaliseSegments() {
 	var timerEnabled bool
+	var errCode int
+	var errMessage string
 
 	timerEnabled = true
 	for {
@@ -255,25 +249,15 @@ func (app *App) SoxNormaliseSegments() {
 
 				filenamePath := app.executableFolder + "vault/segments/" + filename
 				if app.checkFileExists(filenamePath) {
-
 					sox_args := []string{"--norm", filenamePath, "-r 48000", "-c 1", filenamePath + ".normal.wav"}
-					log.Println("INFO: sox ", sox_args)
 
-					cmd := exec.Command(app.soxExecutable, sox_args...)
-					out, err := cmd.Output()
-					if err != nil {
-						if exitError, ok := err.(*exec.ExitError); ok {
-							errorMessage := "ERR: sox --norm return code " + strconv.Itoa(exitError.ExitCode())
-							log.Println(errorMessage)
-							app.DBAudioVaultInsertAuditEvent(filename, errorMessage)
-							app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, exitError.ExitCode())
-							break
-						}
-						log.Println("ERR: could not run command, ", err.Error())
+					errCode, errMessage, _ = app.executeExternalCommand(app.soxExecutable, sox_args)
+					if errCode != 0 {
+						app.DBAudioVaultInsertAuditEvent(filename, errMessage)
+						app.DBAudioVaultUpdateSegmentSoxReturnCode(filename, errCode)
 						break
 					}
 
-					_ = out
 					app.DBAudioVaultUpdateSegmentNormalised(filename)
 					app.DBAudioVaultInsertAuditEvent(filename, "sox ["+strings.Join(sox_args, " ")+"]")
 				}
@@ -287,6 +271,8 @@ func (app *App) SoxNormaliseSegments() {
 
 func (app *App) SoxConcatenateSegments() {
 	var timerEnabled bool
+	var errCode int
+	var errMessage string
 
 	timerEnabled = true
 	for {
@@ -308,23 +294,12 @@ func (app *App) SoxConcatenateSegments() {
 					}
 					sox_args = append(sox_args, "vault/dictations/"+documentID+".wav")
 
-					log.Println("INFO: sox ", sox_args)
-					cmd := exec.Command(app.soxExecutable, sox_args...)
-
-					out, err := cmd.CombinedOutput()
-					if err != nil {
-						if exitError, ok := err.(*exec.ExitError); ok {
-							errorMessage := "ERR: sox --combine concatenate return code " + strconv.Itoa(exitError.ExitCode())
-							log.Println(errorMessage)
-							app.DBAudioVaultInsertAuditEvent(documentID, errorMessage)
-							app.DBAudioVaultUpdateSegmentSoxReturnCode(documentID, exitError.ExitCode())
-							break
-						}
-						log.Println("ERR: could not run command, ", err.Error())
+					errCode, errMessage, _ = app.executeExternalCommand(app.soxExecutable, sox_args)
+					if errCode != 0 {
+						app.DBAudioVaultInsertAuditEvent(documentID, errMessage)
+						app.DBAudioVaultUpdateSegmentSoxReturnCode(documentID, errCode)
 						break
 					}
-
-					_ = out
 
 					// generate a PNG of the audio wave form
 					audio_wave_form_args := []string{
@@ -332,7 +307,7 @@ func (app *App) SoxConcatenateSegments() {
 						"-o" + app.executableFolder + "vault/dictations/" + documentID + ".png",
 						"-zauto", "-w800", "-h150",
 					}
-					errCode, errMessage := app.executeExternalCommand(app.audioWaveFormExecutable, audio_wave_form_args)
+					errCode, errMessage, _ = app.executeExternalCommand(app.audioWaveFormExecutable, audio_wave_form_args)
 					if errCode != 0 {
 						app.DBAudioVaultInsertAuditEvent(documentID, errMessage)
 						break
