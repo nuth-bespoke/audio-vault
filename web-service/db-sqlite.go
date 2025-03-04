@@ -17,6 +17,43 @@ func (app *App) DBAudioVaultClose() {
 	app.sqliteReader.Close()
 }
 
+func (app *App) DBAudioVaultGetAudioEvents(instr string) template.HTML {
+	var err error
+	var rows *sql.Rows
+	var tplBuffer bytes.Buffer
+
+	auditEvents := auditEvents{}
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			EventAt,
+			EventMessage
+		FROM AuditEvents
+		WHERE SegmentFileName ` + instr + `
+		ORDER BY EventAt ASC;`)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	for rows.Next() {
+		var audioEvent auditEvent
+		if err = rows.Scan(
+			&audioEvent.EventAt,
+			&audioEvent.EventMessage); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+		auditEvents.AuditEvents = append(auditEvents.AuditEvents, audioEvent)
+	}
+	rows.Close()
+
+	err = app.tplHTML.ExecuteTemplate(&tplBuffer, "audit-events", auditEvents)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	return (template.HTML(tplBuffer.String()))
+}
+
 func (app *App) DBAudioVaultGetSegments() string {
 	var err error
 	var rows *sql.Rows

@@ -38,6 +38,7 @@ type dictation struct {
 	WaveformExists       bool
 	DictationAudioExists bool
 	SegmentHTML          template.HTML
+	AuditEventsHTML      template.HTML
 }
 
 type segments struct {
@@ -57,4 +58,13 @@ type segment struct {
 	AudioSampleRate       string
 	ProcessingProgress    string
 	SoxStatusCode         string
+}
+
+type auditEvents struct {
+	AuditEvents []auditEvent
+}
+
+type auditEvent struct {
+	EventAt      string
+	EventMessage string
 }

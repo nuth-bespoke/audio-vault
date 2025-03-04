@@ -43,6 +43,17 @@ func (app *App) routeDictation(w http.ResponseWriter, r *http.Request) {
 
 		s.Dictation.SegmentHTML = app.DBAudioVaultGetSegmentsDataByDocumentID(s.Dictation.DocumentID)
 
+		auditEventsIDs := app.DBAudioVaultGetSegmentsByDocumentID(s.Dictation.DocumentID)
+		auditEventsIDs = append(auditEventsIDs, s.Dictation.DocumentID)
+
+		// build an SQL IN statement to grab all audit events
+		instr := "[" + strings.Join(auditEventsIDs, "^") + "]"
+		instr = strings.ReplaceAll(instr, `^`, `', '`)
+		instr = strings.ReplaceAll(instr, `[`, `IN ('`)
+		instr = strings.ReplaceAll(instr, `]`, `')`)
+
+		s.Dictation.AuditEventsHTML = app.DBAudioVaultGetAudioEvents(instr)
+
 		err = app.tplHTML.ExecuteTemplate(&tplBuffer, "dictation", s)
 		if err != nil {
 			log.Println("ERR:" + err.Error())

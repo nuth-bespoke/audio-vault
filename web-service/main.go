@@ -300,6 +300,7 @@ func (app *App) SoxConcatenateSegments() {
 						app.DBAudioVaultUpdateSegmentSoxReturnCode(documentID, errCode)
 						break
 					}
+					app.DBAudioVaultInsertAuditEvent(documentID, "sox ["+strings.Join(sox_args, " ")+"]")
 
 					// generate a PNG of the audio wave form
 					audio_wave_form_args := []string{
@@ -313,7 +314,7 @@ func (app *App) SoxConcatenateSegments() {
 						break
 					}
 
-					app.DBAudioVaultInsertAuditEvent(documentID, "SUCCESS:"+app.audioWaveFormExecutable+" ["+strings.Join(audio_wave_form_args, " ")+"]")
+					app.DBAudioVaultInsertAuditEvent(documentID, "audiowaveform ["+strings.Join(audio_wave_form_args, " ")+"]")
 					app.DBAudioVaultUpdateDictationComplete(documentID)
 				}
 			}

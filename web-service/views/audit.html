@@ -1,0 +1,18 @@
+{{define "audit-events" -}}
+<p>&nbsp;</p>
+
+<table class="table table-sm table-striped table-hover">
+    <tr>
+        <th width="200">Date/Time</th>
+        <th>Audit Event</th>
+    </tr>
+
+    {{range .AuditEvents -}}
+    <tr>
+        <td>{{.EventAt}}</td>
+        <td>{{.EventMessage}}</td>
+    </tr>
+    {{end -}}
+</table>
+
+{{end -}}
