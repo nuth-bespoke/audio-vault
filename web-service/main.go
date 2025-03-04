@@ -314,9 +314,7 @@ func (app *App) SoxConcatenateSegments() {
 					}
 
 					app.DBAudioVaultInsertAuditEvent(documentID, "SUCCESS:"+app.audioWaveFormExecutable+" ["+strings.Join(audio_wave_form_args, " ")+"]")
-
-					// TODO: create function to update Segments table
-					// TODO: create function to update Dictations table
+					app.DBAudioVaultUpdateDictationComplete(documentID)
 				}
 			}
 

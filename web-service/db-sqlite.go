@@ -233,6 +233,29 @@ func (app *App) DBAudioVaultUpdateSegmentNormalised(filename string) {
 	}
 }
 
+func (app *App) DBAudioVaultUpdateDictationComplete(documentID string) {
+
+	var sql = `
+		UPDATE Segments SET
+			ProcessingProgress = 3
+		WHERE DocumentID = ?`
+
+	_, err := app.sqliteWriter.Exec(sql, documentID)
+	if err != nil {
+		log.Println("FATAL:Updating Dictation Complete [1]:" + err.Error())
+	}
+
+	sql = `
+		UPDATE Dictations SET
+			CompletedAt = datetime(current_timestamp, 'localtime')
+		WHERE DocumentID = ?`
+
+	_, err = app.sqliteWriter.Exec(sql, documentID)
+	if err != nil {
+		log.Println("FATAL:Updating Dictation Complete [2]:" + err.Error())
+	}
+}
+
 func (app *App) DBAudioVaultUpdateSegmentMetadata(bitRate, duration, precision, sampleRate, filename string) {
 	var sql = `
 		UPDATE Segments SET
