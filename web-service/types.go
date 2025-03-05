@@ -68,3 +68,14 @@ type auditEvent struct {
 	EventAt      string
 	EventMessage string
 }
+
+type submission struct {
+	DocumentID      string
+	MRN             string
+	CreatedBy       string
+	MachineName     string
+	SegmentCount    string
+	SegmentOrder    string
+	SegmentFileName string
+	SegmentFileSize string
+}

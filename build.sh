@@ -9,6 +9,7 @@ mkdir release/static-assets/
 mkdir release/views/
 #mkdir release/tools/
 #mkdir release/vault/
+cp ./audio-samples/segment*.wav ./release/
 cp -R ./web-service/static-assets/* ./release/static-assets/
 cp -R ./web-service/views/* ./release/views/
 #cp -R ./web-service/vault/* ./release/vault/

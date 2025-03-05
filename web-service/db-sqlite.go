@@ -396,3 +396,49 @@ func (app *App) DBAudioVaultInsertAuditEvent(filename, message string) {
 		log.Println("FATAL:Inserting Audit Event : " + filename + " : " + message + " :" + err.Error())
 	}
 }
+
+func (app *App) DBAudioVaultInsertDictation(submission *submission) {
+
+	// fmt.Println("------------------------------")
+	// fmt.Println(submission.DocumentID)
+	// fmt.Println(submission.MRN)
+	// fmt.Println(submission.CreatedBy)
+	// fmt.Println(submission.MachineName)
+	// fmt.Println(submission.SegmentCount)
+	// fmt.Println(submission.SegmentOrder)
+	// fmt.Println("------------------------------")
+
+	var sql = `
+		INSERT OR IGNORE INTO Dictations
+			(DocumentID, MRN, CreatedBy, MachineName, SegmentCount, SavedAt)
+			VALUES (?, ?, ?, ?, ?, datetime(current_timestamp, 'localtime'))`
+
+	_, err := app.sqliteWriter.Exec(sql,
+		submission.DocumentID,
+		submission.MRN,
+		submission.CreatedBy,
+		submission.MachineName,
+		submission.SegmentCount)
+
+	if err != nil {
+		log.Println("FATAL:Inserting Dictation : " + submission.DocumentID + " :" + err.Error())
+	}
+}
+
+func (app *App) DBAudioVaultInsertSegment(submission *submission) {
+
+	var sql = `
+		INSERT OR IGNORE INTO Segments
+			(SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder, ProcessingProgress)
+			VALUES (?, ?, ?, ?, 0)`
+
+	_, err := app.sqliteWriter.Exec(sql,
+		submission.SegmentFileName,
+		submission.DocumentID,
+		submission.SegmentFileSize,
+		submission.SegmentOrder)
+
+	if err != nil {
+		log.Println("FATAL:Inserting Segment : " + submission.DocumentID + " :" + err.Error())
+	}
+}

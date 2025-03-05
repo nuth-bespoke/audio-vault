@@ -62,11 +62,24 @@ INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, Segmen
 INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
     VALUES (98767970, '0999994H', 'BRADLEYP0', 'P4000', datetime(current_timestamp, 'localtime'), 2);
 
+INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
+    VALUES (987690000, '0999994H', 'BRADLEYP6', 'P4000', datetime(current_timestamp, 'localtime'), 3);
+
 INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
     VALUES ('98767978-0999994H-12345-1.wav', 98767978, 567890, 1);
 
 INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
     VALUES ('98767978-0999994H-67890-2.wav', 98767978, 55567890, 2);
+
+INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+    VALUES ('segment-1.wav', 987690000, 246606, 1);
+
+INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+    VALUES ('segment-2.wav', 987690000, 239694, 2);
+
+INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+    VALUES ('segment-3.wav', 987690000, 321486, 3);
+
 
 --EXPLAIN QUERY PLAN
 SELECT 

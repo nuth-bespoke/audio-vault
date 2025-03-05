@@ -204,14 +204,30 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	app.DBAudioVaultInsertAuditEvent(header.Filename, "storing file")
+	err = r.ParseForm()
+	if err != nil {
+		log.Println("ERR: 400 Bad Request " + err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 Bad Request" + err.Error()))
+		return
+	}
+
+	submission := submission{}
+	submission.DocumentID = r.Form.Get("DocumentID")
+	submission.MRN = r.Form.Get("MRN")
+	submission.CreatedBy = strings.ToUpper(r.Form.Get("CreatedBy"))
+	submission.MachineName = strings.ToUpper(r.Form.Get("MachineName"))
+	submission.SegmentCount = r.Form.Get("SegmentCount")
+	submission.SegmentOrder = r.Form.Get("SegmentOrder")
+	submission.SegmentFileName = strings.ToLower(header.Filename)
+	submission.SegmentFileSize = strconv.FormatInt(header.Size, 10)
 
 	// create the file on disk in the vault folders
 	dst, err := os.Create(app.executableFolder + "vault/segments/" + header.Filename)
 	if err != nil {
 		errorMessage := "ERR: 500 error creating file entry for " + header.Filename + " : " + err.Error()
 		log.Println(errorMessage)
-		app.DBAudioVaultInsertAuditEvent(header.Filename, errorMessage)
+		app.DBAudioVaultInsertAuditEvent(submission.DocumentID, errorMessage)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - " + err.Error()))
 		return
@@ -222,16 +238,17 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 	if _, err := io.Copy(dst, file); err != nil {
 		errorMessage := "ERR: 500 error writing data to file " + header.Filename + " : " + err.Error()
 		log.Println(errorMessage)
-		app.DBAudioVaultInsertAuditEvent(header.Filename, errorMessage)
+		app.DBAudioVaultInsertAuditEvent(submission.DocumentID, errorMessage)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - " + err.Error()))
 		return
 	}
 
-	// w.Header().Set("K", "V")
-	app.DBAudioVaultInsertAuditEvent(header.Filename, "file saved successfully")
+	app.DBAudioVaultInsertDictation(&submission)
+	app.DBAudioVaultInsertSegment(&submission)
+	app.DBAudioVaultInsertAuditEvent(submission.DocumentID, "store ["+header.Filename+" : "+strconv.FormatInt(header.Size, 10)+" bytes written]")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("200 - " + header.Filename + " received"))
+	w.Write([]byte("201 - " + header.Filename + " Created"))
 }
 
 func (app *App) routeTesting(w http.ResponseWriter, r *http.Request) {
