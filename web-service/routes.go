@@ -125,6 +125,9 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	completedDictations := time.NewTicker(time.Second * 2)
+	defer completedDictations.Stop()
+
 	pendingSegments := time.NewTicker(time.Second * 2)
 	defer pendingSegments.Stop()
 
@@ -137,6 +140,18 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-clientGone:
+
+		case <-completedDictations.C:
+			dictations := app.DBAudioVaultGetDictations()
+
+			//remove new lines from segments HTML so that
+			//it can be sent over Server Side Events
+			dictations = strings.Replace(dictations, "\n", "", -1)
+			_, err := w.Write([]byte("event:dictations\ndata: " + dictations + "\n\n"))
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
 
 		case <-pendingSegments.C:
 			segments := app.DBAudioVaultGetSegments()

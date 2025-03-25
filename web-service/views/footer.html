@@ -23,10 +23,13 @@
             only include code to check server side events
             if the web page title includes the word 'Dashboard'
         */
+        const debugging = false;
         const eventSrc = new EventSource("server-side-events/");
+
         const cpu = document.getElementById("cpu");
-        const segments = document.getElementById("segments");
+        const dictations = document.getElementById("dictations");
         const paused_chkbox = document.getElementById('paused');
+        const segments = document.getElementById("segments");
 
         eventSrc.addEventListener("cpu", (event) => {
             cpu.textContent = event.data;
@@ -34,12 +37,23 @@
 
         eventSrc.addEventListener("segments", (event) => {
             if (paused_chkbox === null) {
-                console.log("paused_chkbox element does not exist");
+                if(debugging) {console.log("paused_chkbox element does not exist");}
             } else if (paused_chkbox.checked) {
-                console.log("not updating segments table as paused")
+                if(debugging) {console.log("not updating segments table as paused");}
             } else {
                 segments.innerHTML = event.data;
-                console.log("updated segments table")
+                if(debugging) {console.log("updated segments table");}
+            }
+        });
+
+        eventSrc.addEventListener("dictations", (event) => {
+            if (paused_chkbox === null) {
+                if(debugging) {console.log("paused_chkbox element does not exist");}
+            } else if (paused_chkbox.checked) {
+                if(debugging) {console.log("not updating segments table as paused");}
+            } else {
+                dictations.innerHTML = event.data;
+                if(debugging) {console.log("updated dictations table");}
             }
         });
 
@@ -65,7 +79,7 @@
         }
 
         eventSrc.onerror = (err) => {
-            console.log("sse error", err);
+            if(debugging) {console.log("sse error", err);}
         };
     } else {
         const serverUsage = document.getElementById("server-usage");

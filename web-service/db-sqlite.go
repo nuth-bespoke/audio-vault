@@ -90,6 +90,56 @@ func (app *App) DBAudioVaultGetDictationsForDocstore() docstoreDictations {
 	return docstoreDictationRows
 }
 
+func (app *App) DBAudioVaultGetDictations() string {
+	var err error
+	var rows *sql.Rows
+	var tplBuffer bytes.Buffer
+
+	dictations := docstoreDictations{}
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			DocumentID,
+			MRN,
+			CreatedBy,
+			MachineName,
+			IFNULL(strftime('%d-%m-%Y %H:%M:%S', SavedAt), "-") AS SavedAt,
+			IFNULL(strftime('%d-%m-%Y %H:%M:%S', SentToDocstore), "-") AS SentToDocstore
+		 FROM Dictations
+		WHERE CompletedAt IS NOT NULL
+		ORDER BY CompletedAt DESC;`)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	// IFNULL(fax, 'Call:' || phone) fax
+
+	for rows.Next() {
+		var dictation docstoreDictation
+
+		if err = rows.Scan(
+			&dictation.DocumentID,
+			&dictation.MRN,
+			&dictation.CreatedBy,
+			&dictation.MachineName,
+			&dictation.SavedAt,
+			&dictation.SentToDocstore); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		dictations.Dictations = append(dictations.Dictations, dictation)
+	}
+
+	rows.Close()
+
+	err = app.tplHTML.ExecuteTemplate(&tplBuffer, "dictations-listing", dictations)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	return tplBuffer.String()
+}
+
 func (app *App) DBAudioVaultGetSegments() string {
 	var err error
 	var rows *sql.Rows

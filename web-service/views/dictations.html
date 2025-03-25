@@ -1,0 +1,26 @@
+{{define "dictations-listing" -}}
+
+<table class="table table-sm table-striped table-hover">
+    <tr>
+        <th width="90">DocID</th>
+        <th width="90">MRN</th>
+        <th width="110">User</th>
+        <th >PC</th>
+        <th width="200">Submitted</th>
+        <th width="210">Saved to Docstore</th>
+    </tr>
+
+    {{range .Dictations -}}
+    <tr>
+        <td><a href="dictation/{{.DocumentID}}">{{.DocumentID}}</a></td>
+        <td>{{.MRN}}</td>
+        <td>{{.CreatedBy}}</td>
+        <td>{{.MachineName}}</td>
+        <td>{{.SavedAt}}</td>
+        <td>{{.SentToDocstore}}</td>
+    </tr>
+
+    {{end -}}
+</table>
+
+{{end -}}
