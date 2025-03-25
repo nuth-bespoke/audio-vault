@@ -14,6 +14,7 @@ type App struct {
 	signalChannel           chan os.Signal // channel to monitor operating system signals
 	soxExecutable           string         // the full path to the SoX executable
 	audioWaveFormExecutable string         // the full path to the audioeaveform executable
+	audio2docstore          string         // the full path to the audio2docstore executable
 	tplHTML                 *html.Template // pointer to all the HTML templates (views)
 	sqliteReader            *sql.DB
 	sqliteWriter            *sql.DB
@@ -39,6 +40,21 @@ type dictation struct {
 	DictationAudioExists bool
 	SegmentHTML          template.HTML
 	AuditEventsHTML      template.HTML
+}
+
+type docstoreDictation struct {
+	DocumentID     string
+	MRN            string
+	CreatedBy      string
+	MachineName    string
+	SavedAt        string
+	DictatedAt     string
+	CompletedAt    string
+	SentToDocstore string
+}
+
+type docstoreDictations struct {
+	Dictations []docstoreDictation
 }
 
 type segments struct {

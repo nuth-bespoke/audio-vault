@@ -43,6 +43,7 @@ func main() {
 	go app.SoxGetMetadata()
 	go app.SoxNormaliseSegments()
 	go app.SoxConcatenateSegments()
+	go app.PushAudioToDocstore()
 
 	app.configureRoutes()
 	fmt.Println("HTTP web service loaded.")
@@ -128,9 +129,11 @@ func (app *App) initialise() {
 	if runtime.GOOS == "windows" {
 		app.soxExecutable = app.executableFolder + "tools/sox/sox.exe"
 		app.audioWaveFormExecutable = app.executableFolder + "tools/audiowaveform/audiowaveform.exe"
+		app.audio2docstore = app.executableFolder + "tools/nuth/audio2docstore.exe"
 	} else {
 		app.soxExecutable = "/usr/bin/sox"
 		app.audioWaveFormExecutable = "/usr/bin/audiowaveform"
+		app.audio2docstore = "/usr/bin/audio2docstore"
 	}
 
 	app.GitCommitHashShort = app.GitCommitHash[0:8]
@@ -162,6 +165,48 @@ func (app *App) monitorOperatingSystemSignals() {
 	app.applicationLogFileClose()
 	app.DBAudioVaultClose()
 	os.Exit(1)
+}
+
+func (app *App) PushAudioToDocstore() {
+	var timerEnabled bool
+	var errCode int
+	var errMessage string
+	var cmdOutput string
+
+	timerEnabled = true
+	for {
+		if timerEnabled {
+			timerEnabled = false
+
+			var docstoreDictationRows = docstoreDictations{}
+			docstoreDictationRows = app.DBAudioVaultGetDictationsForDocstore()
+
+			for _, row := range docstoreDictationRows.Dictations {
+				filenamePath := app.executableFolder + "vault/dictations/" + row.DocumentID + ".wav"
+
+				if app.checkFileExists(filenamePath) {
+					docstore_args := []string{
+						"-document", row.DocumentID,
+						"-document-creation-date", row.SavedAt,
+						"-document-dictation-date", row.DictatedAt}
+
+					errCode, errMessage, cmdOutput = app.executeExternalCommand(app.audio2docstore, docstore_args)
+					if errCode != 0 {
+						app.DBAudioVaultInsertAuditEvent(row.DocumentID, errMessage+` `+cmdOutput)
+						break
+					}
+
+					app.DBAudioVaultInsertAuditEvent(row.DocumentID, "docstore ["+strings.Join(docstore_args, " ")+"]")
+					app.DBAudioVaultUpdateDocstoreCompletedDate(row.DocumentID)
+				} else {
+					app.DBAudioVaultInsertAuditEvent(row.DocumentID, "docstore ["+filenamePath+"] NOT found when trying to submit to docstore")
+				}
+			}
+
+			time.Sleep(5 * time.Second)
+			timerEnabled = true
+		}
+	}
 }
 
 func (app *App) SoxParseMetadata(prefix string, data []string) string {

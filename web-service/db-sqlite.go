@@ -54,6 +54,42 @@ func (app *App) DBAudioVaultGetAudioEvents(instr string) template.HTML {
 	return (template.HTML(tplBuffer.String()))
 }
 
+func (app *App) DBAudioVaultGetDictationsForDocstore() docstoreDictations {
+	var err error
+	var rows *sql.Rows
+
+	var docstoreDictationRows = docstoreDictations{}
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			DocumentID,
+			strftime('%Y-%d-%m %H:%M:%S', SavedAt) AS CreationDate,
+			strftime('%Y-%m-%d %H:%M:%S', CompletedAt) AS DictationDate
+		FROM Dictations
+		WHERE CompletedAt IS NOT NULL
+		  AND SentToDocstore IS NULL
+		LIMIT 0, 10;`)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	for rows.Next() {
+		var docstoreDictationRow docstoreDictation
+
+		if err = rows.Scan(
+			&docstoreDictationRow.DocumentID,
+			&docstoreDictationRow.SavedAt,
+			&docstoreDictationRow.DictatedAt); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		docstoreDictationRows.Dictations = append(docstoreDictationRows.Dictations, docstoreDictationRow)
+	}
+
+	rows.Close()
+	return docstoreDictationRows
+}
+
 func (app *App) DBAudioVaultGetSegments() string {
 	var err error
 	var rows *sql.Rows
@@ -331,6 +367,18 @@ func (app *App) DBAudioVaultUpdateSegmentNormalised(filename string) {
 	_, err := app.sqliteWriter.Exec(sql, filename)
 	if err != nil {
 		log.Println("FATAL:Updating Segments Normalised :" + err.Error())
+	}
+}
+
+func (app *App) DBAudioVaultUpdateDocstoreCompletedDate(documentID string) {
+	var sql = `
+		UPDATE Dictations SET
+			SentToDocstore = datetime(current_timestamp, 'localtime')
+		WHERE DocumentID = ?`
+
+	_, err := app.sqliteWriter.Exec(sql, documentID)
+	if err != nil {
+		log.Println("FATAL:Updating Dictation Docstore Date :" + err.Error())
 	}
 }
 

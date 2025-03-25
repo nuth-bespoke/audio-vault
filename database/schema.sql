@@ -26,12 +26,13 @@ CREATE TABLE Dictations (
     MachineName     TEXT NOT NULL,
     SavedAt         TEXT NOT NULL,
     SegmentCount    INTEGER NOT NULL DEFAULT 0,
-    CompletedAt     TEXT
+    CompletedAt     TEXT,
+    SentToDocstore  TEXT
 );
 
 CREATE INDEX idx_dictation_mrn ON Dictations (MRN);
 CREATE INDEX idx_dictation_completed_at ON Dictations (CompletedAt);
-
+CREATE INDEX idx_dictation_completed_at_docstore ON Dictations (CompletedAt, SentToDocstore);
 
 DROP TABLE IF EXISTS Segments;
 
@@ -56,20 +57,20 @@ CREATE INDEX idx_segments_pending ON Segments
     (ProcessingProgress, DocumentID, SegmentFileOrder)
     WHERE ProcessingProgress <= 2;
 
-INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
-    VALUES (98767978, '0999994H', 'BRADLEYP6', 'P4X045', datetime(current_timestamp, 'localtime'), 2);
+-- INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
+--     VALUES (98767978, '0999994H', 'BRADLEYP6', 'P4X045', datetime(current_timestamp, 'localtime'), 2);
 
-INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
-    VALUES (98767970, '0999994H', 'BRADLEYP0', 'P4000', datetime(current_timestamp, 'localtime'), 2);
+-- INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
+--     VALUES (98767970, '0999994H', 'BRADLEYP0', 'P4000', datetime(current_timestamp, 'localtime'), 2);
 
 INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
     VALUES (987690000, '0999994H', 'BRADLEYP6', 'P4000', datetime(current_timestamp, 'localtime'), 3);
 
-INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
-    VALUES ('98767978-0999994H-12345-1.wav', 98767978, 567890, 1);
+-- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+--     VALUES ('98767978-0999994H-12345-1.wav', 98767978, 567890, 1);
 
-INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
-    VALUES ('98767978-0999994H-67890-2.wav', 98767978, 55567890, 2);
+-- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+--     VALUES ('98767978-0999994H-67890-2.wav', 98767978, 55567890, 2);
 
 INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
     VALUES ('segment-1.wav', 987690000, 246606, 1);
@@ -79,6 +80,14 @@ INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileO
 
 INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
     VALUES ('segment-3.wav', 987690000, 321486, 3);
+
+
+SELECT
+    DocumentID,
+    strftime('%Y-%d-%m %H:%M:%S', SavedAt) AS CreationDate,
+    strftime('%Y-%m-%d %H:%M:%S', CompletedAt) AS DictationDate
+  FROM Dictations;
+
 
 
 --EXPLAIN QUERY PLAN
