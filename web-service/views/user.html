@@ -14,6 +14,7 @@
             <th width="180">Date</th>
             <th width="100">Type</th>
             <th width="110">Computer</th>
+            <th width="100">&nbsp;</th>
             <th >Message</th>
         </tr>
     </thead>
@@ -25,6 +26,7 @@
 
 <!-- import crypto js to be use by decryptTursoLogEntry() -->
 <script src="../static-assets/js/crypto-js-4.2.0.min.js"></script>
+<script src="../static-assets/js/clipboard.js-2.0.11.min.js"></script>
 
 <script>
     function decryptTursoLogEntry (data) {
@@ -43,6 +45,14 @@
         } catch (error) {
             console.error("An error occurred during decryption:", error);
         }
+    }
+
+    function generateTableEntryForMachine(data) {
+        const tblCell = document.createElement('td');
+        tblCell.innerHTML =
+            ' <button type="button" class="btn btn-secondary btn-sm" data-clipboard-text="\\\\' + data + '\\c$\\">1</button>' +
+            ' <button type="button" class="btn btn-secondary btn-sm" data-clipboard-text="\\\\' + data + '\\c$\\Users\\{{.UserID}}\\AppData\Local\\DocumentStore\\">2</button>';
+        return tblCell
     }
 
     function generateTableEntry(data) {
@@ -76,6 +86,7 @@
                 tblRow.appendChild(generateTableEntry(row[0]['value'])); // EventAt
                 tblRow.appendChild(generateTableEntry(row[1]['value'])); // EventType
                 tblRow.appendChild(generateTableEntry(decryptTursoLogEntry(row[2]['value']))); // EventMachine
+                tblRow.appendChild(generateTableEntryForMachine(decryptTursoLogEntry(row[2]['value']))); // EventMachine
                 tblRow.appendChild(generateTableEntry(decryptTursoLogEntry(row[3]['value']))); // EventMessage
 
                 tableBody.append(tblRow)
@@ -112,6 +123,29 @@
     }
 
     if (document.title.includes('User Logs')) {
+        var clipboard = new ClipboardJS('.btn');
+
+        const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+        const appendAlert = (message, type) => {
+            const wrapper = document.createElement('div')
+            wrapper.innerHTML = [
+                `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+                `   <div>${message}</div>`,
+                '</div>'
+            ].join('');
+
+            alertPlaceholder.innerHTML = wrapper.getHTML();
+        }
+
+        clipboard.on('success', function(e) {
+            appendAlert(e.text + ' copied to the clipboard', 'success');
+            e.clearSelection();
+
+            setTimeout(() => {
+                alertPlaceholder.innerHTML = '';
+            }, 2000);
+        });
+
         retrieveTursoLogs();
     }
 </script>
