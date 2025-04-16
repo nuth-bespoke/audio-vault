@@ -3,10 +3,22 @@
 {{template "header" .}}
 
 <main>
-    <h2>User Logs ({{.UserID}})</h2>
+    <h3>User Logs ({{.UserID}})</h3>
     <p>&nbsp;</p>
     <p>These are the decrypted logs submitted from the Docstore Audio Client for the user ({{.UserID}}) with a calculated hash value of [{{.UserHash}}]</p>
     <p>The logs can contain entries from multiple computers if that user logged into several machines within the same timeframe.</p>
+
+    <h3>Filter by dates</h3>
+
+    <label for="dateFrom"><b>From:</b></label>
+    <input type="date" id="dateFrom">
+
+    <label for="dateTo"><b>To:</b></label>
+    <input type="date" id="dateTo">
+
+    <button id="filterByDates" type="button" class="btn btn-light btn-sm">Filter Results</button>
+
+    <h3>Results</h3>
 
     <table id="tursoLogs" class="table table-sm table-striped table-hover">
     <thead>
@@ -18,6 +30,8 @@
             <th >Message</th>
         </tr>
     </thead>
+
+    <tbody id="tursoLogsBody"></tbody>
 
     </table>
 
@@ -40,7 +54,6 @@
             const bytes = CryptoJS.AES.decrypt({ ciphertext: parsedCipher }, keyWordArray, { iv: ivWordArray });
 
             const plaintext = bytes.toString(CryptoJS.enc.Utf8);
-            console.log(plaintext);
             return plaintext;
         } catch (error) {
             console.error("An error occurred during decryption:", error);
@@ -76,9 +89,14 @@
         try {
             const turso = JSON.parse(data);
             const rows = turso.results[0].response.result.rows;
-
             const table = document.getElementById('tursoLogs');
+            const tableTursoBody = document.getElementById('tursoLogsBody');
+            if (tableTursoBody) {
+                tableTursoBody.remove();
+            }
+
             const tableBody = document.createElement('tbody');
+            tableBody.setAttribute("id", "tursoLogsBody");
             const fragment = document.createDocumentFragment();
 
             rows.forEach(row => {
@@ -100,7 +118,7 @@
         }
     }
 
-    function retrieveTursoLogs() {
+    function retrieveTursoLogs(sqlStatement) {
         const url = "{{.Application.TursoEndpoint}}";
         const authToken = "{{.Application.TursoAuthorization}}";
 
@@ -112,7 +130,7 @@
         },
         body: JSON.stringify({
             requests: [
-            { type: "execute", stmt: { sql: "SELECT EventAt, EventType, EventMachine, EventMessage FROM TelemetryEvents WHERE EventUser = '{{.UserHash}}' ORDER BY EventAt DESC LIMIT 0,1000"} },
+            { type: "execute", stmt: { sql: sqlStatement } },
             { type: "close" },
             ],
         }),
@@ -146,7 +164,20 @@
             }, 2000);
         });
 
-        retrieveTursoLogs();
+
+        document.getElementById('filterByDates').addEventListener('click', function() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+
+            if(dateFrom > dateTo) {
+                window.alert("The from date can't be after the to date.");
+                return;
+            }
+
+            retrieveTursoLogs("SELECT EventAt, EventType, EventMachine, EventMessage FROM TelemetryEvents WHERE EventUser = '{{.UserHash}}' AND EventAt BETWEEN '" + dateFrom + " 00:00:00' AND '" + dateTo + " 23:59:59' ORDER BY EventAt DESC");
+        });
+
+        retrieveTursoLogs("SELECT EventAt, EventType, EventMachine, EventMessage FROM TelemetryEvents WHERE EventUser = '{{.UserHash}}' ORDER BY EventAt DESC LIMIT 0,1000");
     }
 </script>
 
