@@ -19,7 +19,7 @@ segments:
 
 poly:
 	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=987690000 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=3 -F SegmentOrder=1 -F "fileupload=@./audio-samples/segment-1.wav" -vvv
-	sleep 3
-	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=987690000 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=3 -F SegmentOrder=2 -F "fileupload=@./audio-samples/segment-2.wav" -vvv
-	sleep 3
-	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=987690000 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=3 -F SegmentOrder=3 -F "fileupload=@./audio-samples/segment-3.wav" -vvv
+	# sleep 3
+	# curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=987690000 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=3 -F SegmentOrder=2 -F "fileupload=@./audio-samples/segment-2.wav" -vvv
+	# sleep 3
+	# curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=987690000 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=3 -F SegmentOrder=3 -F "fileupload=@./audio-samples/segment-3.wav" -vvv

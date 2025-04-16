@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	"gopkg.in/ini.v1"
 	_ "modernc.org/sqlite"
 )
 
@@ -27,6 +28,7 @@ func main() {
 	}
 
 	app.initialise()
+	app.loadSettings()
 	app.applicationLogFileOpen()
 	app.createFolderStructure()
 	app.loadHTMLTemplates()
@@ -139,6 +141,22 @@ func (app *App) initialise() {
 	app.GitCommitHashShort = app.GitCommitHash[0:8]
 	app.signalChannel = make(chan os.Signal, 1)
 	signal.Notify(app.signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+}
+
+func (app *App) loadSettings() {
+	// load the settings file
+	cfg, err := ini.Load(app.executableFolder + "settings.ini")
+	if err != nil {
+		fmt.Println("ERROR: Unable to load settings.ini")
+		os.Exit(1)
+	}
+
+	// configure the app struct based on
+	// the values from the settings.ini file
+	app.TursoEndpoint = cfg.Section("").Key("turso-endpoint").String()
+	app.TursoAuthorization = cfg.Section("").Key("turso-authorization").String()
+	app.TursoAESKey = cfg.Section("").Key("turso-aes-key").String()
+	app.TursoAESIV = cfg.Section("").Key("turso-aes-iv").String()
 }
 
 func (app *App) loadHTMLTemplates() {

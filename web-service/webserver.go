@@ -13,10 +13,11 @@ func (app *App) configureRoutes() {
 	http.HandleFunc("/dictation/", app.webServerHeaders(app.routeDictation))
 	http.HandleFunc("/testing/", app.webServerHeaders(app.routeTesting))
 	http.HandleFunc("/server-side-events/", app.webServerHeaders(app.routeServerSideEvents))
-	http.HandleFunc("/waveform/", app.routeWaveForm)
+	http.HandleFunc("/user/", app.webServerHeaders(app.routeUser))
 
 	http.HandleFunc("/store/", app.routeStore)
 	http.HandleFunc("/stream/", app.routeStream)
+	http.HandleFunc("/waveform/", app.routeWaveForm)
 }
 
 // The web server always emits these default HTTP response headers
@@ -26,6 +27,9 @@ func (app *App) defaultResponseHeaders(w http.ResponseWriter) {
 	if w.Header().Get("Content-Type") == "text/html" {
 		// w.Header().Set("Content-Security-Policy", "default-src 'self';")
 	}
+
+	w.Header().Set("AAccess-Control-Allow-Origin", "turso.io")
+	w.Header().Set("Access-Control-Allow-Headers", "Authorization")
 
 	w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
 	w.Header().Set("Cross-Origin-Opener-Policy", "same-origin-allow-popups")

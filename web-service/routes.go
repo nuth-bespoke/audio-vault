@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -237,6 +239,16 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 	submission.SegmentFileName = strings.ToLower(header.Filename)
 	submission.SegmentFileSize = strconv.FormatInt(header.Size, 10)
 
+	if app.Testing {
+		fmt.Println("DocID=" + submission.DocumentID)
+		fmt.Println("MRN=" + submission.MRN)
+		fmt.Println("CreatedBy=" + submission.CreatedBy)
+		fmt.Println("MachineName=" + submission.MachineName)
+		fmt.Println("SegmentCount=" + submission.SegmentCount)
+		fmt.Println("SegmentOrder=" + submission.SegmentOrder)
+		fmt.Println("--------------------------")
+	}
+
 	// create the file on disk in the vault folders
 	dst, err := os.Create(app.executableFolder + "vault/segments/" + header.Filename)
 	if err != nil {
@@ -277,6 +289,39 @@ func (app *App) routeTesting(w http.ResponseWriter, r *http.Request) {
 		s.WebPageTitle = "Testers Dashboard"
 
 		err = app.tplHTML.ExecuteTemplate(&tplBuffer, "dashboard", s)
+		if err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		w.WriteHeader(200)
+		w.Write(tplBuffer.Bytes())
+	} else {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte("Method not allowed. :-("))
+	}
+}
+
+func GenerateUserMD5Hash(text string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(text))
+	return strings.ToUpper(hex.EncodeToString(hasher.Sum(nil)))
+}
+
+func (app *App) routeUser(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var tplBuffer bytes.Buffer
+
+	s := requestState{Application: *app}
+
+	if strings.ToUpper(r.Method) == "GET" {
+		s.UserID = strings.Replace(r.URL.Path, "/user/", "", -1)
+		s.UserID = strings.ToUpper(s.UserID)
+		s.UserHash = GenerateUserMD5Hash(s.UserID)
+
+		s.WebPageTitle = "User Logs (" + s.UserID + ")"
+
+		err = app.tplHTML.ExecuteTemplate(&tplBuffer, "user", s)
 		if err != nil {
 			log.Println("ERR:" + err.Error())
 		}

@@ -5,6 +5,7 @@ go 1.23.0
 require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/shirou/gopsutil/v4 v4.25.1
+	gopkg.in/ini.v1 v1.67.0
 	modernc.org/sqlite v1.35.0
 )
 

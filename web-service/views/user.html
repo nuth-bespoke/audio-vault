@@ -1,0 +1,121 @@
+{{define "user" -}}
+
+{{template "header" .}}
+
+<main>
+    <h2>User Logs ({{.UserID}})</h2>
+    <p>&nbsp;</p>
+    <p>These are the decrypted logs submitted from the Docstore Audio Client for the user ({{.UserID}}) with a calculated hash value of [{{.UserHash}}]</p>
+    <p>The logs can contain entries from multiple computers if that user logged into several machines within the same timeframe.</p>
+
+    <table id="tursoLogs" class="table table-sm table-striped table-hover">
+    <thead>
+        <tr>
+            <th width="180">Date</th>
+            <th width="100">Type</th>
+            <th width="110">Computer</th>
+            <th >Message</th>
+        </tr>
+    </thead>
+
+    </table>
+
+</main>
+
+
+<!-- import crypto js to be use by decryptTursoLogEntry() -->
+<script src="../static-assets/js/crypto-js-4.2.0.min.js"></script>
+
+<script>
+    function decryptTursoLogEntry (data) {
+        var key = "{{.Application.TursoAESKey}}";
+        var iv = "{{.Application.TursoAESIV}}";
+
+        try {
+            var keyWordArray = CryptoJS.enc.Utf8.parse(key);
+            var ivWordArray = CryptoJS.enc.Utf8.parse(iv);
+            const parsedCipher = CryptoJS.enc.Base64.parse(data);
+            const bytes = CryptoJS.AES.decrypt({ ciphertext: parsedCipher }, keyWordArray, { iv: ivWordArray });
+
+            const plaintext = bytes.toString(CryptoJS.enc.Utf8);
+            console.log(plaintext);
+            return plaintext;
+        } catch (error) {
+            console.error("An error occurred during decryption:", error);
+        }
+    }
+
+    function generateTableEntry(data) {
+        const tblCell = document.createElement('td');
+        tblCell.textContent = data;
+
+        if(data === "INFO") {
+            tblCell.innerHTML = '<span class="badge text-bg-info">INFO</span>';
+        }
+        if(data === "ERROR") {
+            tblCell.innerHTML = '<span class="badge text-bg-warning">ERROR</span>';
+        }
+        if(data === "SAVE") {
+            tblCell.innerHTML = '<span class="badge text-bg-success">SAVE</span>';
+        }
+
+        return tblCell
+    }
+
+    function parseTursoLogs(data) {
+        try {
+            const turso = JSON.parse(data);
+            const rows = turso.results[0].response.result.rows;
+
+            const table = document.getElementById('tursoLogs');
+            const tableBody = document.createElement('tbody');
+            const fragment = document.createDocumentFragment();
+
+            rows.forEach(row => {
+                const tblRow = document.createElement('tr');
+                tblRow.appendChild(generateTableEntry(row[0]['value'])); // EventAt
+                tblRow.appendChild(generateTableEntry(row[1]['value'])); // EventType
+                tblRow.appendChild(generateTableEntry(decryptTursoLogEntry(row[2]['value']))); // EventMachine
+                tblRow.appendChild(generateTableEntry(decryptTursoLogEntry(row[3]['value']))); // EventMessage
+
+                tableBody.append(tblRow)
+            });
+
+            fragment.appendChild(tableBody);
+            table.appendChild(fragment);
+
+        } catch (error) {
+            console.error("An error occurred during parsing turso logs :", error);
+        }
+    }
+
+    function retrieveTursoLogs() {
+        const url = "{{.Application.TursoEndpoint}}";
+        const authToken = "{{.Application.TursoAuthorization}}";
+
+        fetch(url, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            requests: [
+            { type: "execute", stmt: { sql: "SELECT EventAt, EventType, EventMachine, EventMessage FROM TelemetryEvents WHERE EventUser = '{{.UserHash}}' ORDER BY EventAt DESC LIMIT 0,1000"} },
+            { type: "close" },
+            ],
+        }),
+        })
+        .then((res) => res.json())
+        .then((data) => parseTursoLogs(JSON.stringify(data)))
+        .catch((err) => console.log(err));
+    }
+
+    if (document.title.includes('User Logs')) {
+        retrieveTursoLogs();
+    }
+</script>
+
+
+{{template "footer" .}}
+{{end -}}

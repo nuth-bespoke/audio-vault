@@ -8,6 +8,7 @@
 *.so
 *.dylib
 
+settings.ini
 web-service/vault/*
 audio-samples/*
 audio-vault
