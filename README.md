@@ -41,15 +41,17 @@ Future versions will incorporate [peaks.js](https://github.com/bbc/peaks.js) to 
 A list of endpoints that the service will expose.
 The table outlines which endpoints use logging and which require an API key (configured in the `settings.ini` file)
 
-| endpoint            | API Key | description                                                                  |
-| ------------------- |---------|----------------------------------------------------------------------------- |
-| /health-check       | N       | Used by clients and automated checks to see if the service is running        |
-| /orphan             | Y       | Allows clients to submit audio not associated with a specific letter         |
-| /record             | Y       | Allows clients to submit meta data about incoming audio segments             |
-| /server-side-events | N       | Sever push of CPU usage and list of pending segments that are being processed|
-| /store              | Y       | Allows clients to submit audio segments for safe keeping                     |
-| /stream             | N       | Allows web user interface to stream audio to a HTML5 audio element           |
-| /testing            | N       | A web user interface to allow tester to monitor the audio conversion process |
+| endpoint            | API Key | description                                                                       |
+| ------------------- |---------|---------------------------------------------------------------------------------- |
+| /dictation          | N       | A web user interface to retrieve the final dictation and the segments that made it|
+| /health-check       | N       | Used by clients and automated checks to see if the service is running             |
+| /orphan             | Y       | Allows clients to submit audio not associated with a specific letter              |
+| /record             | Y       | Allows clients to submit meta data about incoming audio segments                  |
+| /server-side-events | N       | Sever push of CPU usage and list of pending segments that are being processed     |
+| /store              | Y       | Allows clients to submit audio segments for safe keeping                          |
+| /stream             | N       | Allows web user interface to stream audio to a HTML5 audio element                |
+| /testing            | N       | A web user interface to allow tester to monitor the audio conversion process      |
+| /user               | N       | A web user interface to retrieve logs for a given user from a turso database      |
 
 
 ## Running Web Service from IIS using a Reverse Proxy
@@ -69,6 +71,9 @@ Substitute the port number, if you've changed it from the default of `1969`.
             <rule name="ReverseProxyAudioVault" enabled="true" stopProcessing="true">
                 <match url="(.*)" ignoreCase="true" />
                 <action type="Rewrite" url="http://localhost:1969/{R:1}" />
+                <serverVariables>
+                    <set name="HTTP_AUTHORIZATION" value="{HTTP_AUTHORIZATION}" />
+                </serverVariables>
             </rule>
         </rules>
     </rewrite>
