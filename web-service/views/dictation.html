@@ -3,30 +3,55 @@
 {{template "header" .}}
 
 <main>
-    <h3>Dictation Audio ({{.Dictation.DocumentID}})</h3>
-    <p></p>
 
-    {{if .Dictation.WaveformExists -}}
-        <p><img src="waveform/{{.Dictation.DocumentID}}.png?{{.Application.GitCommitHash}}" width="800" height="150" alt=""></p>
+    {{if eq .Dictation.DocumentID "0" -}}
+
+        <h3>Search for Dictation by Docstore Document ID</h3>
+
+        <p>&nbsp;</p>
+        <form id="dictationSearchForm">
+            <label for="dictationInput">Enter Document ID:</label>
+            <input type="text" id="dictationInput" name="dictationID" required>
+            <button type="submit" type="button" class="btn btn-primary btn-sm">Search</button>
+        </form>
+
+        <script>
+            document.getElementById('dictationSearchForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const userInput = document.getElementById('dictationInput').value;
+                const baseUrl = '{{.Application.BaseURL}}/dictation/';
+                const fullUrl = baseUrl + encodeURIComponent(userInput);
+                window.location.href = fullUrl;
+            });
+        </script>
+
+    {{else -}}
+
+        <h3>Dictation Audio ({{.Dictation.DocumentID}})</h3>
+        <p></p>
+
+        {{if .Dictation.WaveformExists -}}
+            <p><img src="waveform/{{.Dictation.DocumentID}}.png?{{.Application.GitCommitHash}}" width="800" height="150" alt=""></p>
+        {{end -}}
+
+        {{if .Dictation.DictationAudioExists -}}
+            <audio 
+                class="dictation"
+                controls preload="none"
+                controlslist="nofullscreen nodownload noremoteplayback noplaybackrate"
+                src="/stream/{{.Dictation.DocumentID}}.wav">
+            </audio>
+        {{end -}}
+
+        <h3>Individual Segments/Recordings</h3>
+        <p>These are the individual recordings captured by Fluency Direct<br>
+        Each segment below has been stitched together to produce the digital dictation above.</p>
+        {{.Dictation.SegmentHTML}}
+
+        <h3>Audit Events</h3>
+        {{.Dictation.AuditEventsHTML}}
+
     {{end -}}
-
-    {{if .Dictation.DictationAudioExists -}}
-        <audio 
-            class="dictation"
-            controls preload="none"
-            controlslist="nofullscreen nodownload noremoteplayback noplaybackrate"
-            src="/stream/{{.Dictation.DocumentID}}.wav">
-        </audio>
-    {{end -}}
-
-    <h3>Individual Segments/Recordings</h3>
-    <p>These are the individual recordings captured by Fluency Direct<br>
-    Each segment below has been stitched together to produce the digital dictation above.</p>
-    {{.Dictation.SegmentHTML}}
-
-    <h3>Audit Events</h3>
-    {{.Dictation.AuditEventsHTML}}
-
 </main>
 
 {{template "footer" .}}
