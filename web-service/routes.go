@@ -239,15 +239,15 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 	submission.SegmentFileName = strings.ToLower(header.Filename)
 	submission.SegmentFileSize = strconv.FormatInt(header.Size, 10)
 
-	if app.Testing {
-		fmt.Println("DocID=" + submission.DocumentID)
-		fmt.Println("MRN=" + submission.MRN)
-		fmt.Println("CreatedBy=" + submission.CreatedBy)
-		fmt.Println("MachineName=" + submission.MachineName)
-		fmt.Println("SegmentCount=" + submission.SegmentCount)
-		fmt.Println("SegmentOrder=" + submission.SegmentOrder)
-		fmt.Println("--------------------------")
-	}
+	// if app.Testing {
+	// 	fmt.Println("DocID=" + submission.DocumentID)
+	// 	fmt.Println("MRN=" + submission.MRN)
+	// 	fmt.Println("CreatedBy=" + submission.CreatedBy)
+	// 	fmt.Println("MachineName=" + submission.MachineName)
+	// 	fmt.Println("SegmentCount=" + submission.SegmentCount)
+	// 	fmt.Println("SegmentOrder=" + submission.SegmentOrder)
+	// 	fmt.Println("--------------------------")
+	// }
 
 	// create the file on disk in the vault folders
 	dst, err := os.Create(app.executableFolder + "vault/segments/" + header.Filename)
@@ -273,12 +273,12 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 
 	app.DBAudioVaultInsertDictation(&submission)
 	app.DBAudioVaultInsertSegment(&submission)
-	app.DBAudioVaultInsertAuditEvent(submission.DocumentID, "store ["+header.Filename+" : "+strconv.FormatInt(header.Size, 10)+" bytes written]")
+	app.DBAudioVaultInsertAuditEvent(submission.DocumentID, "docstore audio submission ["+header.Filename+" : "+strconv.FormatInt(header.Size, 10)+" bytes written]")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("201 - " + header.Filename + " Created"))
 }
 
-func (app *App) routeTesting(w http.ResponseWriter, r *http.Request) {
+func (app *App) routeDashboard(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var tplBuffer bytes.Buffer
 

@@ -43,14 +43,13 @@ The table outlines which endpoints use logging and which require an API key (con
 
 | endpoint            | API Key | description                                                                       |
 | ------------------- |---------|---------------------------------------------------------------------------------- |
+| /dashboard          | N       | A web user interface to allow tester to monitor the audio conversion process      |
 | /dictation          | N       | A web user interface to retrieve the final dictation and the segments that made it|
 | /health-check       | N       | Used by clients and automated checks to see if the service is running             |
 | /orphan             | Y       | Allows clients to submit audio not associated with a specific letter              |
-| /record             | Y       | Allows clients to submit meta data about incoming audio segments                  |
 | /server-side-events | N       | Sever push of CPU usage and list of pending segments that are being processed     |
 | /store              | Y       | Allows clients to submit audio segments for safe keeping                          |
 | /stream             | N       | Allows web user interface to stream audio to a HTML5 audio element                |
-| /testing            | N       | A web user interface to allow tester to monitor the audio conversion process      |
 | /user               | N       | A web user interface to retrieve logs for a given user from a turso database      |
 
 

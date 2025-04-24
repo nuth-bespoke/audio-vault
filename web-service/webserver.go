@@ -11,7 +11,7 @@ import (
 func (app *App) configureRoutes() {
 	http.HandleFunc("/health-check/", app.webServerHeaders(app.routeHealthCheck))
 	http.HandleFunc("/dictation/", app.webServerHeaders(app.routeDictation))
-	http.HandleFunc("/testing/", app.webServerHeaders(app.routeTesting))
+	http.HandleFunc("/dashboard/", app.webServerHeaders(app.routeDashboard))
 	http.HandleFunc("/server-side-events/", app.webServerHeaders(app.routeServerSideEvents))
 	http.HandleFunc("/user/", app.webServerHeaders(app.routeUser))
 
@@ -28,9 +28,8 @@ func (app *App) defaultResponseHeaders(w http.ResponseWriter) {
 		// w.Header().Set("Content-Security-Policy", "default-src 'self';")
 	}
 
-	w.Header().Set("AAccess-Control-Allow-Origin", "turso.io")
-	w.Header().Set("Access-Control-Allow-Headers", "Authorization")
-
+	// w.Header().Set("AAccess-Control-Allow-Origin", "turso.io")
+	// w.Header().Set("Access-Control-Allow-Headers", "Authorization")
 	w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
 	w.Header().Set("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
 	w.Header().Set("Cross-Origin-Resource-Policy", "same-origin")

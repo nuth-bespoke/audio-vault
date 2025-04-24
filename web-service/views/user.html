@@ -78,10 +78,12 @@
         if(data === "ERROR") {
             tblCell.innerHTML = '<span class="badge text-bg-warning">ERROR</span>';
         }
-        if(data === "SAVE") {
+        if(data === "SAVE" || data === "CREATE" || data === "PLAY") {
             tblCell.innerHTML = '<span class="badge text-bg-success">SAVE</span>';
         }
-
+        if(data === "STORE") {
+            tblCell.innerHTML = '<span class="badge text-bg-secondary">STORE</span>';
+        }
         return tblCell
     }
 
