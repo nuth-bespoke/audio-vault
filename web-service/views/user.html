@@ -3,37 +3,61 @@
 {{template "header" .}}
 
 <main>
-    <h3>User Logs ({{.UserID}})</h3>
-    <p>&nbsp;</p>
-    <p>These are the decrypted logs submitted from the Docstore Audio Client for the user ({{.UserID}}) with a calculated hash value of [{{.UserHash}}]</p>
-    <p>The logs can contain entries from multiple computers if that user logged into several machines within the same timeframe.</p>
 
-    <h3>Filter by dates</h3>
+    {{if eq .UserID "" -}}
 
-    <label for="dateFrom"><b>From:</b></label>
-    <input type="date" id="dateFrom">
+        <h3>Search for User by AD Account</h3>
 
-    <label for="dateTo"><b>To:</b></label>
-    <input type="date" id="dateTo">
+        <p>&nbsp;</p>
+        <form id="userSearchForm">
+            <label for="userInput">Enter users AD Account:</label>
+            <input type="text" id="userInput" name="userAD" required>
+            <button type="submit" type="button" class="btn btn-primary btn-sm">Search</button>
+        </form>
 
-    <button id="filterByDates" type="button" class="btn btn-light btn-sm">Filter Results</button>
+        <script>
+            document.getElementById('userSearchForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const userInput = document.getElementById('userInput').value;
+                const baseUrl = '{{.Application.BaseURL}}/user/';
+                const fullUrl = baseUrl + encodeURIComponent(userInput);
+                window.location.href = fullUrl;
+            });
+        </script>
 
-    <h3>Results</h3>
+    {{else -}}
 
-    <table id="tursoLogs" class="table table-sm table-striped table-hover">
-    <thead>
-        <tr>
-            <th width="180">Date</th>
-            <th width="100">Type</th>
-            <th width="110">Computer</th>
-            <th width="100">&nbsp;</th>
-            <th >Message</th>
-        </tr>
-    </thead>
+        <h3>User Logs ({{.UserID}})</h3>
+        <p>&nbsp;</p>
+        <p>These are the decrypted logs submitted from the Docstore Audio Client for the user ({{.UserID}}) with a calculated hash value of [{{.UserHash}}]</p>
+        <p>The logs can contain entries from multiple computers if that user logged into several machines within the same timeframe.</p>
 
-    <tbody id="tursoLogsBody"></tbody>
+        <h3>Filter by dates</h3>
+        <label for="dateFrom"><b>From:</b></label>
+        <input type="date" id="dateFrom">
 
-    </table>
+        <label for="dateTo"><b>To:</b></label>
+        <input type="date" id="dateTo">
+        <button id="filterByDates" type="button" class="btn btn-light btn-sm">Filter Results</button>
+
+        <h3>Results</h3>
+
+        <table id="tursoLogs" class="table table-sm table-striped table-hover">
+        <thead>
+            <tr>
+                <th width="180">Date</th>
+                <th width="100">Type</th>
+                <th width="110">Computer</th>
+                <th width="100">&nbsp;</th>
+                <th >Message</th>
+            </tr>
+        </thead>
+
+        <tbody id="tursoLogsBody"></tbody>
+
+        </table>
+
+    {{end -}}
 
 </main>
 
