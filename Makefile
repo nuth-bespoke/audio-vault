@@ -14,8 +14,9 @@ test: db
 
 
 segments:
-	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F key1=value1 -F "fileupload=@./audio-samples/98767978-0999994H-12345-1.wav" -vvv
-	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F key1=value1 -F "fileupload=@./audio-samples/98767978-0999994H-67890-2.wav" -vvv
+	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=9999999999 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=2 -F SegmentOrder=1 -F "fileupload=@./audio-samples/9999999999-2-0999994H-12345-1.wav" -vvv
+	sleep 3
+	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=9999999999 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=2 -F SegmentOrder=2 -F "fileupload=@./audio-samples/9999999999-2-0999994H-67890-2.wav" -vvv
 
 poly:
 	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=987690000 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=3 -F SegmentOrder=1 -F "fileupload=@./audio-samples/segment-1.wav" -vvv

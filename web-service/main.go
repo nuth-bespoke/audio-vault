@@ -312,7 +312,7 @@ func (app *App) SoxNormaliseSegments() {
 
 				filenamePath := app.executableFolder + "vault/segments/" + filename
 				if app.checkFileExists(filenamePath) {
-					sox_args := []string{"--clobber", "--norm", filenamePath, "-r 48000", "-c 1", filenamePath + ".normal.wav"}
+					sox_args := []string{"--clobber", "--norm", filenamePath, "-r 25050", "-c 1", filenamePath + ".normal.wav"}
 
 					errCode, errMessage, _ = app.executeExternalCommand(app.soxExecutable, sox_args)
 					if errCode != 0 {

@@ -63,8 +63,8 @@ CREATE INDEX idx_segments_pending ON Segments
 -- INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
 --     VALUES (98767970, '0999994H', 'BRADLEYP0', 'P4000', datetime(current_timestamp, 'localtime'), 2);
 
-INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
-    VALUES (999999900, '0999994H', 'BRADLEYP6', 'P4000', datetime(current_timestamp, 'localtime'), 3);
+-- INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, SegmentCount)
+--     VALUES (999999900, '0999994H', 'BRADLEYP6', 'P4000', datetime(current_timestamp, 'localtime'), 3);
             
 -- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
 --     VALUES ('98767978-0999994H-12345-1.wav', 98767978, 567890, 1);
@@ -72,14 +72,14 @@ INSERT INTO Dictations (DocumentID, MRN, CreatedBy, MachineName, SavedAt, Segmen
 -- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
 --     VALUES ('98767978-0999994H-67890-2.wav', 98767978, 55567890, 2);
 
-INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
-    VALUES ('segment-1.wav', 999999900, 246606, 1);
+-- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+--     VALUES ('segment-1.wav', 999999900, 246606, 1);
 
-INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
-    VALUES ('segment-2.wav', 999999900, 239694, 2);
+-- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+--     VALUES ('segment-2.wav', 999999900, 239694, 2);
 
-INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
-    VALUES ('segment-3.wav', 999999900, 321486, 3);
+-- INSERT INTO Segments (SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder)
+--     VALUES ('segment-3.wav', 999999900, 321486, 3);
 
 
 --EXPLAIN QUERY PLAN
@@ -108,3 +108,5 @@ WHERE d.CompletedAt IS NULL
 GROUP BY d.DocumentID
 HAVING COUNT(s.DocumentID) = d.SegmentCount AND ProcessingProgress = 0
 LIMIT 0, 10;
+
+--SELECT SegmentFileName FROM Segments WHERE ProcessingProgress = 0 ORDER BY DocumentID LIMIT 0, 10;
