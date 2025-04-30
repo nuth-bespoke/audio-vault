@@ -68,7 +68,7 @@ func (app *App) DBAudioVaultGetDictationsForDocstore() docstoreDictations {
 		FROM Dictations
 		WHERE CompletedAt IS NOT NULL
 		  AND SentToDocstore IS NULL
-		LIMIT 0, 10;`)
+		LIMIT 0, ?;`, app.ThreadSQLRecordsCount)
 	if err != nil {
 		log.Println("ERR:" + err.Error())
 	}
@@ -304,7 +304,7 @@ func (app *App) DBAudioVaultGetSegmentsByProgressID(progressID int) string {
 		 FROM Segments
 		WHERE ProcessingProgress = ?
 		ORDER BY DocumentID
-		LIMIT 0, 10;`, progressID)
+		LIMIT 0, ?;`, progressID, app.ThreadSQLRecordsCount)
 	if err != nil {
 		log.Println("ERR:" + err.Error())
 	}
@@ -339,7 +339,7 @@ func (app *App) DBAudioVaultGetSegmentsReadyForConcatConcatenation() []string {
 		WHERE d.CompletedAt IS NULL
 		GROUP BY d.DocumentID
 		HAVING COUNT(s.DocumentID) = d.SegmentCount AND ProcessingProgress = 2
-		LIMIT 0, 10;`)
+		LIMIT 0, ?;`, app.ThreadSQLRecordsCount)
 	if err != nil {
 		log.Println("ERR:" + err.Error())
 	}

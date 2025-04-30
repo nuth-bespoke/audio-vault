@@ -154,6 +154,8 @@ func (app *App) loadSettings() {
 	// configure the app struct based on
 	// the values from the settings.ini file
 	app.SoXTargetBitRate = cfg.Section("").Key("sox-target-bit-rate").String()
+	app.ThreadPauseSeconds = int(cfg.Section("").Key("thread-pause-seconds").MustInt())
+	app.ThreadSQLRecordsCount = cfg.Section("").Key("thread-sql-record-count").MustInt()
 	app.TursoEndpoint = cfg.Section("").Key("turso-endpoint").String()
 	app.TursoAuthorization = cfg.Section("").Key("turso-authorization").String()
 	app.TursoAESKey = cfg.Section("").Key("turso-aes-key").String()
@@ -289,7 +291,7 @@ func (app *App) SoxGetMetadata() {
 				}
 			}
 
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Duration(app.ThreadPauseSeconds) * time.Second)
 			timerEnabled = true
 		}
 	}
@@ -327,7 +329,7 @@ func (app *App) SoxNormaliseSegments() {
 				}
 			}
 
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Duration(app.ThreadPauseSeconds) * time.Second)
 			timerEnabled = true
 		}
 	}
@@ -383,7 +385,7 @@ func (app *App) SoxConcatenateSegments() {
 				}
 			}
 
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Duration(app.ThreadPauseSeconds) * time.Second)
 			timerEnabled = true
 		}
 	}

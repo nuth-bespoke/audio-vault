@@ -20,15 +20,17 @@ type App struct {
 	sqliteWriter            *sql.DB
 
 	// Public variables which need to be accessed from the HTML templates/views
-	BaseURL            string // the base URL of the application (different for different hosts)
-	GitCommitHash      string // holds the latest Git Commit has from git rev-parse HEAD
-	GitCommitHashShort string // holds the first 8 characters of the full Git Commit
-	Testing            bool   // true if software is running on a host server that is a testing server
-	SoXTargetBitRate   string // holds the value as loaded from the settings.ini file (sox-target-bit-rate)
-	TursoEndpoint      string
-	TursoAuthorization string
-	TursoAESKey        string
-	TursoAESIV         string
+	BaseURL               string // the base URL of the application (different for different hosts)
+	GitCommitHash         string // holds the latest Git Commit has from git rev-parse HEAD
+	GitCommitHashShort    string // holds the first 8 characters of the full Git Commit
+	Testing               bool   // true if software is running on a host server that is a testing server
+	SoXTargetBitRate      string // holds the value as loaded from the settings.ini file (sox-target-bit-rate)
+	ThreadPauseSeconds    int    // holds the value as loaded from the settings.ini file (thread-pause-seconds)
+	ThreadSQLRecordsCount int    // holds the value as loaded from the settings.ini file (thread-sql-record-count)
+	TursoEndpoint         string
+	TursoAuthorization    string
+	TursoAESKey           string
+	TursoAESIV            string
 }
 
 // requestState is the main data structure
