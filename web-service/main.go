@@ -153,6 +153,7 @@ func (app *App) loadSettings() {
 
 	// configure the app struct based on
 	// the values from the settings.ini file
+	app.SoXTargetBitRate = cfg.Section("").Key("sox-target-bit-rate").String()
 	app.TursoEndpoint = cfg.Section("").Key("turso-endpoint").String()
 	app.TursoAuthorization = cfg.Section("").Key("turso-authorization").String()
 	app.TursoAESKey = cfg.Section("").Key("turso-aes-key").String()
@@ -312,7 +313,7 @@ func (app *App) SoxNormaliseSegments() {
 
 				filenamePath := app.executableFolder + "vault/segments/" + filename
 				if app.checkFileExists(filenamePath) {
-					sox_args := []string{"--clobber", "--norm", filenamePath, "-r 18000", "-c 1", filenamePath + ".normal.wav"}
+					sox_args := []string{"--clobber", "--norm", filenamePath, "-r " + app.SoXTargetBitRate, "-c 1", filenamePath + ".normal.wav"}
 
 					errCode, errMessage, _ = app.executeExternalCommand(app.soxExecutable, sox_args)
 					if errCode != 0 {

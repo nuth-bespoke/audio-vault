@@ -24,6 +24,7 @@ type App struct {
 	GitCommitHash      string // holds the latest Git Commit has from git rev-parse HEAD
 	GitCommitHashShort string // holds the first 8 characters of the full Git Commit
 	Testing            bool   // true if software is running on a host server that is a testing server
+	SoXTargetBitRate   string // holds the value as loaded from the settings.ini file (sox-target-bit-rate)
 	TursoEndpoint      string
 	TursoAuthorization string
 	TursoAESKey        string
