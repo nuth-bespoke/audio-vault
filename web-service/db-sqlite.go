@@ -523,6 +523,24 @@ func (app *App) DBAudioVaultInsertDictation(submission *submission) {
 	}
 }
 
+func (app *App) DBAudioVaultInsertOrphan(submission *submission) {
+
+	var sql = `
+		INSERT OR IGNORE INTO Orphans
+			(OrphanFileName, MRN, CreatedBy, MachineName, SavedAt)
+			VALUES (?, ?, ?, ?, datetime(current_timestamp, 'localtime'))`
+
+	_, err := app.sqliteWriter.Exec(sql,
+		submission.SegmentFileName,
+		submission.MRN,
+		submission.CreatedBy,
+		submission.MachineName)
+
+	if err != nil {
+		log.Println("FATAL:Inserting Orphan : " + submission.SegmentFileName + " :" + err.Error())
+	}
+}
+
 func (app *App) DBAudioVaultInsertSegment(submission *submission) {
 
 	var sql = `
@@ -558,5 +576,17 @@ func (app *App) DBAudioVaultDeletePurgedRecords() {
 	_, err = app.sqliteWriter.Exec(sql)
 	if err != nil {
 		log.Println("FATAL:Purging old dictations from database:" + err.Error())
+	}
+
+	sql = `DELETE FROM Orphans` + where
+	_, err = app.sqliteWriter.Exec(sql)
+	if err != nil {
+		log.Println("FATAL:Purging old orphans from database:" + err.Error())
+	}
+
+	sql = `DELETE FROM AuditEvents WHERE EventAt <=  datetime('now', '-120 days', 'localtime');`
+	_, err = app.sqliteWriter.Exec(sql)
+	if err != nil {
+		log.Println("FATAL:Purging old audit events from database:" + err.Error())
 	}
 }

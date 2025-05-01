@@ -5,13 +5,19 @@ db:
 	cat ./database/schema.sql | sqlite3 ./database/audio-vault.db
 
 
-test: db
+# test: db
+test:
 	cd web-service
 	rm audio-vault.db*
 	cp ../database/audio-vault.db audio-vault.db
 	go build -ldflags="-w -s -X main.GIT_COMMIT_HASH=`git rev-parse HEAD`" -o audio-vault *.go
 	./audio-vault
 
+
+orphans:
+	curl http://localhost:1969/orphan/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F MRN=0999994H -F CreatedBy=DAVID068 -F MachineName=SignalOne -F "fileupload=@./audio-samples/9999999999-2-0999994H-12345-1.wav" -vvv
+	sleep 3
+	curl http://localhost:1969/orphan/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F MRN=0999994H -F CreatedBy=DAVID068 -F MachineName=SignalOne -F "fileupload=@./audio-samples/9999999999-2-0999994H-67890-2.wav" -vvv
 
 segments:
 	curl http://localhost:1969/store/ -H "Authorization: cf83e1357eefb8bdf1542850d66d800" -v -F DocumentID=9999999999 -F MRN=0999994H -F CreatedBy=Paulx030 -F MachineName=SignalZero -F SegmentCount=2 -F SegmentOrder=1 -F "fileupload=@./audio-samples/9999999999-2-0999994H-12345-1.wav" -vvv

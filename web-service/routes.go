@@ -185,6 +185,97 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *App) routeOrphans(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var file multipart.File
+	var header *multipart.FileHeader
+	var dst *os.File
+
+	if r.Header.Get("authorization") != "cf83e1357eefb8bdf1542850d66d800" {
+		log.Println("ERR: 401 Unauthorized, from " + r.RemoteAddr)
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("401 Unauthorized"))
+		return
+	}
+
+	if strings.ToUpper(r.Method) != "POST" {
+		log.Println("ERR: 405 Method Not Allowed, from " + r.RemoteAddr)
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte("405 Method Not Allowed"))
+		return
+	}
+
+	err = r.ParseMultipartForm(1024 * 4)
+	if err != nil {
+		log.Println("ERR: 500 error parsing form data " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+
+	file, header, err = r.FormFile("fileupload")
+	if err != nil {
+		log.Println("ERR: 500 error parsing form data " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+	defer file.Close()
+
+	err = r.ParseForm()
+	if err != nil {
+		log.Println("ERR: 400 Bad Request " + err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 Bad Request" + err.Error()))
+		return
+	}
+
+	submission := submission{}
+	submission.MRN = r.Form.Get("MRN")
+	submission.CreatedBy = strings.ToUpper(r.Form.Get("CreatedBy"))
+	submission.MachineName = strings.ToUpper(r.Form.Get("MachineName"))
+	submission.SegmentFileName = header.Filename
+	submission.SegmentFileSize = strconv.FormatInt(header.Size, 10)
+
+	// if app.Testing {
+	// 	fmt.Println("MRN=" + submission.MRN)
+	// 	fmt.Println("CreatedBy=" + submission.CreatedBy)
+	// 	fmt.Println("MachineName=" + submission.MachineName)
+	// 	fmt.Println(header.Filename)
+	// 	fmt.Println("--------------------------")
+	// }
+
+	// create the file on disk in the vault folders
+	dst, err = os.Create(app.executableFolder + "vault/orphans/" + header.Filename)
+	if err != nil {
+		errorMessage := "ERR: 500 error creating file entry for orphan " + header.Filename + " : " + err.Error()
+		log.Println(errorMessage)
+		app.DBAudioVaultInsertAuditEvent("0404", errorMessage)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+	defer dst.Close()
+
+	// copy the file to the new file location
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		errorMessage := "ERR: 500 error writing data to orphan file " + header.Filename + " : " + err.Error()
+		log.Println(errorMessage)
+		app.DBAudioVaultInsertAuditEvent("0404", errorMessage)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - " + err.Error()))
+		return
+	}
+
+	app.DBAudioVaultInsertOrphan(&submission)
+	app.DBAudioVaultInsertAuditEvent("0404", "docstore audio submission ["+header.Filename+" : "+strconv.FormatInt(header.Size, 10)+" bytes written]")
+
+	log.Println("201 - " + header.Filename + " Created")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("201 - " + header.Filename + " Created"))
+}
+
 func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var file multipart.File
