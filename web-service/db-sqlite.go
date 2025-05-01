@@ -140,6 +140,60 @@ func (app *App) DBAudioVaultGetDictations() string {
 	return tplBuffer.String()
 }
 
+func (app *App) DBAudioVaultGetOrphans(player bool, filter string) string {
+	var err error
+	var rows *sql.Rows
+	var tplBuffer bytes.Buffer
+	var where string
+
+	dictations := docstoreDictations{}
+
+	if len(filter) >= 0 {
+		where = "WHERE MRN LIKE '" + filter + "%' "
+	} else {
+		where = ""
+	}
+
+	rows, err = app.sqliteReader.Query(`
+		SELECT
+			OrphanFileName,
+			MRN,
+			CreatedBy,
+			MachineName,
+			IFNULL(strftime('%d-%m-%Y %H:%M:%S', SavedAt), "-") AS SavedAt
+		 FROM Orphans `+where+`
+		ORDER BY SavedAt DESC
+		LIMIT 0, 50;`, filter)
+
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	for rows.Next() {
+		var dictation docstoreDictation
+
+		if err = rows.Scan(
+			&dictation.OrphanFileName,
+			&dictation.MRN,
+			&dictation.CreatedBy,
+			&dictation.MachineName,
+			&dictation.SavedAt); err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+		dictation.DisplayPlayButtonForOrphan = player
+		dictations.Dictations = append(dictations.Dictations, dictation)
+	}
+
+	rows.Close()
+
+	err = app.tplHTML.ExecuteTemplate(&tplBuffer, "orphans-listing", dictations)
+	if err != nil {
+		log.Println("ERR:" + err.Error())
+	}
+
+	return tplBuffer.String()
+}
+
 func (app *App) DBAudioVaultGetSegments() string {
 	var err error
 	var rows *sql.Rows

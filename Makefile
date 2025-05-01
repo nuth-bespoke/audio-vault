@@ -8,8 +8,8 @@ db:
 # test: db
 test:
 	cd web-service
-	rm audio-vault.db*
-	cp ../database/audio-vault.db audio-vault.db
+# rm audio-vault.db*
+# cp ../database/audio-vault.db audio-vault.db
 	go build -ldflags="-w -s -X main.GIT_COMMIT_HASH=`git rev-parse HEAD`" -o audio-vault *.go
 	./audio-vault
 

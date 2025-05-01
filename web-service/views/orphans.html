@@ -1,0 +1,30 @@
+{{define "orphans-listing" -}}
+
+<table class="table table-sm table-striped table-hover">
+    <tr>
+        <th width="90">MRN</th>
+        <th width="110">User</th>
+        <th >PC</th>
+        <th width="200">Submitted</th>
+        <th width="110">&nbsp;</th>
+    </tr>
+
+    {{range .Dictations -}}
+    <tr>
+        <td><a href="mrn/{{.MRN}}">{{.MRN}}</a></td>
+        <td><a href="user/{{.CreatedBy}}">{{.CreatedBy}}</a></td>
+        <td>{{.MachineName}}</td>
+        <td>{{.SavedAt}}</td>
+        {{if .DisplayPlayButtonForOrphan -}}
+            <td>
+                <audio controls preload="none" controlslist="nofullscreen nodownload noremoteplayback noplaybackrate" src="/stream/{{.OrphanFileName}}"></audio>
+            </td>
+        {{else}}
+            <td>&nbsp;</td>
+        {{end -}}
+    </tr>
+
+    {{end -}}
+</table>
+
+{{end -}}

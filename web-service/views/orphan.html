@@ -1,0 +1,39 @@
+{{define "orphan" -}}
+
+{{template "header" .}}
+
+<main>
+
+    {{if eq .Orphan.MRN "0" -}}
+
+        <h3>Search for Orphan Audio Files by MRN</h3>
+        <p>&nbsp;</p>
+        <form id="mrnSearchForm">
+            <label for="mrnInput">Enter MRN:</label>
+            <input type="text" id="mrnInput" name="MRN" required>
+            <button type="submit" type="button" class="btn btn-primary btn-sm">Search</button>
+        </form>
+
+        <script>
+            document.getElementById('mrnSearchForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const userInput = document.getElementById('mrnInput').value;
+                const baseUrl = '{{.Application.BaseURL}}/mrn/';
+                const fullUrl = baseUrl + encodeURIComponent(userInput);
+                window.location.href = fullUrl;
+            });
+        </script>
+
+    {{else -}}
+
+        <h3>Orphan Audio File(s) found for MRN : ({{.Orphan.MRN}})</h3>
+        <p></p>
+        <p>These are the individual recordings captured by Fluency Direct which couldn't be assigned to a given Docstore Document ID because either the Clinicain didn't press "Save" or the Citrix server disconnected the user session. These files are therefore classed as orphaned, and can only be assigned to the patients MRN.</p>
+
+        {{.Orphan.OrphansHTML}}
+
+    {{end -}}
+</main>
+
+{{template "footer" .}}
+{{end -}}

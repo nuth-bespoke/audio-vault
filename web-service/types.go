@@ -39,6 +39,7 @@ type requestState struct {
 	Application  App
 	WebPageTitle string
 	Dictation    dictation
+	Orphan       orphan
 	UserID       string
 	UserHash     string
 }
@@ -51,15 +52,22 @@ type dictation struct {
 	AuditEventsHTML      template.HTML
 }
 
+type orphan struct {
+	MRN         string
+	OrphansHTML template.HTML
+}
+
 type docstoreDictation struct {
-	DocumentID     string
-	MRN            string
-	CreatedBy      string
-	MachineName    string
-	SavedAt        string
-	DictatedAt     string
-	CompletedAt    string
-	SentToDocstore string
+	DocumentID                 string
+	MRN                        string
+	CreatedBy                  string
+	MachineName                string
+	SavedAt                    string
+	DictatedAt                 string
+	CompletedAt                string
+	SentToDocstore             string
+	DisplayPlayButtonForOrphan bool
+	OrphanFileName             string
 }
 
 type docstoreDictations struct {

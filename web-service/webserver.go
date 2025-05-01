@@ -14,6 +14,7 @@ func (app *App) configureRoutes() {
 	http.HandleFunc("/dashboard/", app.webServerHeaders(app.routeDashboard))
 	http.HandleFunc("/server-side-events/", app.webServerHeaders(app.routeServerSideEvents))
 	http.HandleFunc("/user/", app.webServerHeaders(app.routeUser))
+	http.HandleFunc("/mrn/", app.webServerHeaders(app.routeOrphan))
 
 	http.HandleFunc("/orphan/", app.routeOrphans)
 	http.HandleFunc("/store/", app.routeStore)

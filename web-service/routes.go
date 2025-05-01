@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"mime/multipart"
@@ -71,6 +72,37 @@ func (app *App) routeDictation(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *App) routeOrphan(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var tplBuffer bytes.Buffer
+	var MRN string
+
+	s := requestState{Application: *app}
+
+	if strings.ToUpper(r.Method) == "GET" {
+		MRN = strings.Replace(r.URL.Path, "/mrn/", "", -1)
+		if len(MRN) == 0 {
+			MRN = "0"
+		}
+		s.Orphan.MRN = MRN
+
+		s.WebPageTitle = "Orphan(s) (" + s.Orphan.MRN + ")"
+		s.Orphan.OrphansHTML = template.HTML(app.DBAudioVaultGetOrphans(true, s.Orphan.MRN))
+
+		err = app.tplHTML.ExecuteTemplate(&tplBuffer, "orphan", s)
+		if err != nil {
+			log.Println("ERR:" + err.Error())
+		}
+
+		w.WriteHeader(200)
+		w.Write(tplBuffer.Bytes())
+	} else {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte("Method not allowed. :-("))
+	}
+}
+
 func (app *App) routeHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(200)
@@ -96,6 +128,9 @@ func (app *App) routeStream(w http.ResponseWriter, r *http.Request) {
 		}
 		if app.checkFileExists("vault/dictations/" + audioFilename) {
 			audioFolder = "vault/dictations/"
+		}
+		if app.checkFileExists("vault/orphans/" + audioFilename) {
+			audioFolder = "vault/orphans/"
 		}
 
 		file, err = os.Open(app.executableFolder + audioFolder + audioFilename)
@@ -127,6 +162,9 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	uploadedOrphans := time.NewTicker(time.Second * 2)
+	defer uploadedOrphans.Stop()
+
 	completedDictations := time.NewTicker(time.Second * 2)
 	defer completedDictations.Stop()
 
@@ -142,6 +180,18 @@ func (app *App) routeServerSideEvents(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-clientGone:
+
+		case <-uploadedOrphans.C:
+			orphans := app.DBAudioVaultGetOrphans(false, "")
+
+			//remove new lines from segments HTML so that
+			//it can be sent over Server Side Events
+			orphans = strings.Replace(orphans, "\n", "", -1)
+			_, err := w.Write([]byte("event:orphans\ndata: " + orphans + "\n\n"))
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
 
 		case <-completedDictations.C:
 			dictations := app.DBAudioVaultGetDictations()

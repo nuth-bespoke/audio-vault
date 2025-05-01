@@ -30,6 +30,7 @@
         const dictations = document.getElementById("dictations");
         const paused_chkbox = document.getElementById('paused');
         const segments = document.getElementById("segments");
+        const orphans =  document.getElementById("orphans");
 
         eventSrc.addEventListener("cpu", (event) => {
             cpu.textContent = event.data;
@@ -54,6 +55,17 @@
             } else {
                 dictations.innerHTML = event.data;
                 if(debugging) {console.log("updated dictations table");}
+            }
+        });
+
+        eventSrc.addEventListener("orphans", (event) => {
+            if (paused_chkbox === null) {
+                if(debugging) {console.log("paused_chkbox element does not exist");}
+            } else if (paused_chkbox.checked) {
+                if(debugging) {console.log("not updating segments table as paused");}
+            } else {
+                orphans.innerHTML = event.data;
+                if(debugging) {console.log("updated orphans table");}
             }
         });
 
