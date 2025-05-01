@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	html "html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -46,6 +48,7 @@ func main() {
 	go app.SoxNormaliseSegments()
 	go app.SoxConcatenateSegments()
 	go app.PushAudioToDocstore()
+	go app.RetentionPolicyApply()
 
 	app.configureRoutes()
 	fmt.Println("HTTP web service loaded.")
@@ -387,6 +390,49 @@ func (app *App) SoxConcatenateSegments() {
 
 			time.Sleep(time.Duration(app.ThreadPauseSeconds) * time.Second)
 			timerEnabled = true
+		}
+	}
+}
+
+func (app *App) RetentionPolicyApply() {
+	var timerEnabled bool = true
+
+	for {
+		if timerEnabled {
+			timerEnabled = false
+
+			app.RetentionPurgeFiles(`vault/dictations/`)
+			app.RetentionPurgeFiles(`vault/orphans/`)
+			app.RetentionPurgeFiles(`vault/segments/`)
+			app.DBAudioVaultDeletePurgedRecords()
+
+			time.Sleep(1 * time.Hour)
+			timerEnabled = true
+		}
+	}
+}
+
+func (app *App) RetentionPurgeFiles(source string) {
+	files, err := ioutil.ReadDir(app.executableFolder + source)
+	if err != nil {
+		log.Fatal("ERROR: reading purge folder : " + source + " : " + err.Error())
+	}
+
+	for _, file := range files {
+		// 2880 hours equals 120 days so we keep the files
+		// for 30 days longer than the 90 days as a precaution
+		if time.Since(file.ModTime()) > 2880*time.Hour {
+			sourceFile := filepath.Join(source, file.Name())
+
+			if app.Testing {
+				fmt.Println(`Purging : ` + sourceFile)
+				log.Println(`Purging : ` + sourceFile)
+			}
+
+			err := os.Remove(sourceFile)
+			if err != nil {
+				log.Fatal("ERROR: reading purge folder : " + source + " : " + err.Error())
+			}
 		}
 	}
 }

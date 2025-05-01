@@ -527,8 +527,8 @@ func (app *App) DBAudioVaultInsertSegment(submission *submission) {
 
 	var sql = `
 		INSERT OR IGNORE INTO Segments
-			(SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder, ProcessingProgress)
-			VALUES (?, ?, ?, ?, 0)`
+			(SegmentFileName, DocumentID, SegmentFileSize, SegmentFileOrder, ProcessingProgress, SavedAt)
+			VALUES (?, ?, ?, ?, 0, datetime(current_timestamp, 'localtime'))`
 
 	_, err := app.sqliteWriter.Exec(sql,
 		submission.SegmentFileName,
@@ -538,5 +538,25 @@ func (app *App) DBAudioVaultInsertSegment(submission *submission) {
 
 	if err != nil {
 		log.Println("FATAL:Inserting Segment : " + submission.DocumentID + " :" + err.Error())
+	}
+}
+
+func (app *App) DBAudioVaultDeletePurgedRecords() {
+	var err error
+	var sql string
+	var where string
+
+	where = " WHERE SavedAt <=  datetime('now', '-120 days', 'localtime');"
+
+	sql = `DELETE FROM Segments` + where
+	_, err = app.sqliteWriter.Exec(sql)
+	if err != nil {
+		log.Println("FATAL:Purging old segments from database:" + err.Error())
+	}
+
+	sql = `DELETE FROM Dictations` + where
+	_, err = app.sqliteWriter.Exec(sql)
+	if err != nil {
+		log.Println("FATAL:Purging old dictations from database:" + err.Error())
 	}
 }
