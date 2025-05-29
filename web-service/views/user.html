@@ -96,18 +96,29 @@
         const tblCell = document.createElement('td');
         tblCell.textContent = data;
 
-        if(data === "INFO") {
-            tblCell.innerHTML = '<span class="badge text-bg-info">INFO</span>';
+        if(data === "CREATE") {
+            tblCell.innerHTML = '<span class="badge text-bg-success">CREATE</span>';
         }
         if(data === "ERROR") {
             tblCell.innerHTML = '<span class="badge text-bg-warning">ERROR</span>';
         }
-        if(data === "SAVE" || data === "CREATE" || data === "PLAY") {
+        if(data === "INFO") {
+            tblCell.innerHTML = '<span class="badge text-bg-info">INFO</span>';
+        }
+        if(data === "PLAY") {
+            tblCell.innerHTML = '<span class="badge text-bg-success">PLAY</span>';
+        }
+        if(data === "SAVE") {
             tblCell.innerHTML = '<span class="badge text-bg-success">SAVE</span>';
         }
         if(data === "STORE") {
             tblCell.innerHTML = '<span class="badge text-bg-secondary">STORE</span>';
         }
+        if(data === "WARN") {
+            tblCell.innerHTML = '<span class="badge text-bg-danger">WARN</span>';
+        }
+
+
         return tblCell
     }
 
