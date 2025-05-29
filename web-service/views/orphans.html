@@ -5,6 +5,7 @@
         <th width="90">MRN</th>
         <th width="110">User</th>
         <th >PC</th>
+        <th >Segment File</th>
         <th width="200">Submitted</th>
         <th width="110">&nbsp;</th>
     </tr>
@@ -14,6 +15,7 @@
         <td><a href="mrn/{{.MRN}}">{{.MRN}}</a></td>
         <td><a href="user/{{.CreatedBy}}">{{.CreatedBy}}</a></td>
         <td>{{.MachineName}}</td>
+        <td>{{.OrphanFileName}}</td>
         <td>{{.SavedAt}}</td>
         {{if .DisplayPlayButtonForOrphan -}}
             <td>

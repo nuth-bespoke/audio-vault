@@ -162,7 +162,7 @@ func (app *App) DBAudioVaultGetOrphans(player bool, filter string) string {
 			MachineName,
 			IFNULL(strftime('%d-%m-%Y %H:%M:%S', SavedAt), "-") AS SavedAt
 		 FROM Orphans `+where+`
-		ORDER BY SavedAt DESC
+		ORDER BY OrphanFileName
 		LIMIT 0, 50;`, filter)
 
 	if err != nil {

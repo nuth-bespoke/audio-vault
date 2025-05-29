@@ -4,8 +4,7 @@ db:
 	rm ./database/audio-vault.*
 	cat ./database/schema.sql | sqlite3 ./database/audio-vault.db
 
-
-# test: db
+test: db
 test:
 	cd web-service
 # rm audio-vault.db*
