@@ -36,7 +36,7 @@ func (app *App) defaultResponseHeaders(w http.ResponseWriter) {
 	w.Header().Set("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
 	w.Header().Set("Cross-Origin-Resource-Policy", "same-origin")
 	w.Header().Set("Referrer-Policy", "same-origin")
-	w.Header().Set("Server", "AuditVault")
+	w.Header().Set("Server", "AudioVault")
 	w.Header().Set("Strict-Transport-Security", "max-age=63072000")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Frame-Options", "DENY")
@@ -85,9 +85,9 @@ func (app *App) webServerHeaders(fn http.HandlerFunc) http.HandlerFunc {
 func (app *App) startWebServer() {
 	s := &http.Server{
 		Addr:         app.portNumber,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  2 * time.Minute,
+		ReadTimeout:  120 * time.Second,
+		WriteTimeout: 120 * time.Second,
 	}
 
 	// start the web service and log a fatal error if
