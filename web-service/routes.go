@@ -241,12 +241,12 @@ func (app *App) routeOrphans(w http.ResponseWriter, r *http.Request) {
 	var header *multipart.FileHeader
 	var dst *os.File
 
-	if r.Header.Get("authorization") != "cf83e1357eefb8bdf1542850d66d800" {
-		log.Println("ERR: 401 Unauthorized, from " + r.RemoteAddr)
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("401 Unauthorized"))
-		return
-	}
+	// if r.Header.Get("authorization") != "cf83e1357eefb8bdf1542850d66d800" {
+	// 	log.Println("ERR: 401 Unauthorized, from " + r.RemoteAddr)
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	w.Write([]byte("401 Unauthorized"))
+	// 	return
+	// }
 
 	if strings.ToUpper(r.Method) != "POST" {
 		log.Println("ERR: 405 Method Not Allowed, from " + r.RemoteAddr)
@@ -255,7 +255,9 @@ func (app *App) routeOrphans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = r.ParseMultipartForm(1024 * 4)
+	// 1048576 = 1MB * 60 = Max Size is 60MB
+	// A 2.19 minute diction in testing was 52MB
+	err = r.ParseMultipartForm(1048576 * 60)
 	if err != nil {
 		log.Println("ERR: 500 error parsing form data " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -332,12 +334,12 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 	var header *multipart.FileHeader
 	var dst *os.File
 
-	if r.Header.Get("authorization") != "cf83e1357eefb8bdf1542850d66d800" {
-		log.Println("ERR: 401 Unauthorized, from " + r.RemoteAddr)
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("401 Unauthorized"))
-		return
-	}
+	// if r.Header.Get("authorization") != "cf83e1357eefb8bdf1542850d66d800" {
+	// 	log.Println("ERR: 401 Unauthorized, from " + r.RemoteAddr)
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	w.Write([]byte("401 Unauthorized"))
+	// 	return
+	// }
 
 	if strings.ToUpper(r.Method) != "POST" {
 		log.Println("ERR: 405 Method Not Allowed, from " + r.RemoteAddr)
@@ -346,7 +348,9 @@ func (app *App) routeStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = r.ParseMultipartForm(1024 * 4)
+	// 1048576 = 1MB * 60 = Max Size is 60MB
+	// A 2.19 minute diction in testing was 52MB
+	err = r.ParseMultipartForm(1048576 * 60)
 	if err != nil {
 		log.Println("ERR: 500 error parsing form data " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
